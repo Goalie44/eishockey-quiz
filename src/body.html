@@ -1,0 +1,134 @@
+<div style="height:10px;background:#14181f"></div><div style="height:8px;background:#FFD100"></div>
+<div id="demo" class="demo hide">Demo-Modus – ohne Datenbank, nur zum Ausprobieren. Code: <b>TEST-1234</b> oder <b>TRAINER-DEMO</b></div>
+<div class="wrap" id="wrap">
+
+<section id="boot"><p class="muted" style="margin-top:40px;text-align:center">Lädt …</p></section>
+
+<section id="login" class="hide">
+  <div class="cond muted" style="font-size:15px;font-weight:600">ANMELDEN</div>
+  <h1>Eishockey-Quiz</h1>
+  <div class="card" id="l1">
+    <label class="lbl" for="code">Mannschaftscode</label>
+    <input id="code" class="inp" autocomplete="off" autocapitalize="characters" placeholder="z. B. U15-K7QX">
+    <div class="err" id="e1"></div>
+    <button class="btn yel full" id="b1">Weiter</button>
+  </div>
+  <div class="card hide" id="l2">
+    <div class="row" style="justify-content:space-between;margin-bottom:6px"><strong id="tname"></strong><button class="btn small" id="back1">Code ändern</button></div>
+    <div class="muted" style="font-size:15px;margin-bottom:10px">Wer bist du?</div>
+    <input id="nfilter" class="inp" placeholder="Namen suchen" autocomplete="off">
+    <div id="names" class="names"></div>
+  </div>
+  <div class="card hide" id="l3">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px"><strong id="pname"></strong><button class="btn small" id="back2">Anderer Name</button></div>
+    <div id="pwOld">
+      <label class="lbl" for="pw">Passwort</label>
+      <input id="pw" class="inp" type="password" autocomplete="current-password">
+    </div>
+    <div id="pwNew" class="hide">
+      <p class="muted" style="margin:0 0 10px;font-size:15px">Du meldest dich zum ersten Mal an. Lege dein eigenes Passwort fest (mindestens 6 Zeichen) und merke es dir gut.</p>
+      <label class="lbl" for="pw1">Neues Passwort</label>
+      <input id="pw1" class="inp" type="password" autocomplete="new-password">
+      <label class="lbl" for="pw2">Passwort wiederholen</label>
+      <input id="pw2" class="inp" type="password" autocomplete="new-password">
+    </div>
+    <div class="err" id="e3"></div>
+    <button class="btn yel full" id="b3">Anmelden</button>
+    <p class="muted" style="font-size:13px;margin:10px 0 0">Passwort vergessen? Sag deinem Trainer Bescheid – er setzt es zurück.</p>
+  </div>
+</section>
+
+<section id="home" class="hide">
+  <div class="row" style="justify-content:space-between;margin-bottom:6px"><span class="cond muted" style="font-size:15px;font-weight:600" id="hteam"></span><button class="btn small" id="logout">Abmelden</button></div>
+  <h1 id="hello"></h1>
+  <div class="card" style="margin:12px 0 14px">
+    <div class="row" style="justify-content:space-between"><span class="cond" style="font-size:22px;font-weight:700">Kapitel 1</span><span class="tag lvl">U13+</span></div>
+    <div class="muted" style="font-size:15px;margin:2px 0 10px">Defensive Zone · Aufbau · Bully · Regelkunde · 13 Fragen</div>
+    <div style="display:flex;justify-content:space-between;font-weight:600;font-size:15px"><span id="hdone"></span><span id="hpct"></span></div>
+    <div class="bar" style="margin:6px 0 12px"><i id="hbar" style="width:0"></i></div>
+    <div class="row"><button class="btn yel" id="hstart">Starten</button><button class="btn hide" id="hfresh">Von vorne</button></div>
+    <div class="muted" id="hbest" style="font-size:14px;margin-top:10px"></div>
+  </div>
+  <div class="card muted" style="margin-bottom:14px;font-size:15px">Weitere Kapitel (Rush, offensive Zone, Special Teams, Forecheck …) folgen.</div>
+  <div class="legend"><span><span class="dot" style="background:var(--ink);border:2px solid var(--yel)"></span>Dein Team</span><span><span class="dot" style="background:var(--red)"></span>Gegner</span><span><span class="dot" style="background:var(--ink)"></span>Puck</span></div>
+  <button class="btn primary full hide" id="htrainer" style="margin-top:16px">Trainerbereich</button>
+</section>
+
+<section id="quiz" class="hide">
+  <div class="row" style="justify-content:space-between;margin-bottom:10px"><button class="btn small" id="menu">☰ Menü</button><span id="done" style="font-size:14px;font-weight:600"></span></div>
+  <div class="qgrid">
+    <div class="qleft">
+      <div class="top"><span id="prog">Frage 1 von 13</span><span class="row" style="gap:6px"><span class="tag" id="chap"></span><span class="tag lvl" id="lvl"></span></span></div>
+      <div class="bar"><i id="barfill" style="width:0"></i></div>
+      <div class="rinkbox"><div class="banner" id="banner"></div><svg id="rink" viewBox="0 0 400 420"></svg></div>
+    </div>
+    <div class="qright">
+      <div class="q" id="qtext"></div>
+      <div class="opts" id="opts"></div>
+      <div id="fb"></div>
+      <div class="row" style="margin-top:14px;justify-content:space-between">
+        <button class="btn small" id="prev">← Zurück</button>
+        <span class="row"><button class="btn small" id="replay">Nochmal ansehen</button><button class="btn primary hide" id="next">Weiter</button></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="result" class="hide">
+  <div class="cond muted" style="font-size:15px;font-weight:600">AUSWERTUNG</div>
+  <div class="card" style="margin:8px 0 14px;text-align:center">
+    <div class="big" id="pct">0 %</div>
+    <div id="score" style="font-weight:600;margin-top:4px"></div>
+    <div id="verdict" class="muted" style="margin-top:6px"></div>
+  </div>
+  <div class="row" style="margin-bottom:8px"><button class="btn yel" id="retryWrong">Fehler üben</button><button class="btn" id="toHome">Zum Menü</button></div>
+  <div class="res card"><strong>Deine Antworten</strong><ul id="reslist"></ul></div>
+</section>
+
+<section id="trainer" class="hide">
+  <div class="row" style="justify-content:space-between;margin-bottom:6px"><button class="btn small" id="tback">← Menü</button><span class="tag" id="trole"></span></div>
+  <h1>Trainerbereich</h1>
+  <div class="card" style="margin:10px 0 14px">
+    <label class="lbl" for="tsel">Mannschaft</label>
+    <select id="tsel" class="inp"></select>
+    <div class="row" style="justify-content:space-between;margin-top:4px">
+      <span>Code: <b id="tcode" class="mono"></b></span>
+      <span class="row" style="gap:6px"><button class="btn small" id="tcopy">Kopieren</button><button class="btn small adminonly" id="tnewcode">Neuer Code</button></span>
+    </div>
+    <div class="muted" id="tcopymsg" style="font-size:13px;margin-top:6px"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="row" style="justify-content:space-between"><strong>Spieler und Trainer</strong><span class="muted" id="tcount" style="font-size:14px"></span></div>
+    <div id="tlist"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <strong>Hinzufügen</strong>
+    <p class="muted" style="font-size:14px;margin:4px 0 8px">Ein Name pro Zeile, z. B. „Müller T“. Mehrere auf einmal gehen auch.</p>
+    <textarea id="tnames" class="inp" rows="4" placeholder="Müller T&#10;Schmidt L"></textarea>
+    <div class="row" style="margin-top:8px">
+      <select id="trolesel" class="inp" style="width:auto;margin:0"><option value="player">als Spieler</option><option value="trainer" class="adminonly">als Trainer</option></select>
+      <button class="btn yel" id="tadd">Hinzufügen</button>
+    </div>
+    <div class="err" id="tadderr"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <strong>Fragen-Auswertung (Kapitel 1)</strong>
+    <p class="muted" style="font-size:14px;margin:4px 0 8px">Wie viele der Antworten waren richtig – so siehst du, was du im Training nochmal aufgreifen solltest.</p>
+    <div id="tstats"></div>
+  </div>
+
+  <div class="card adminonly" style="margin-bottom:14px">
+    <strong>Neue Mannschaft</strong>
+    <div class="row" style="margin-top:8px">
+      <input id="tnewteam" class="inp" style="flex:1;margin:0" placeholder="z. B. U15">
+      <button class="btn" id="tcreate">Anlegen</button>
+    </div>
+    <div class="err" id="tcreateerr"></div>
+  </div>
+</section>
+
+<div id="modal" class="modal hide"><div class="card mbox"><div id="mtext" style="margin-bottom:14px"></div><div class="row" style="justify-content:flex-end"><button class="btn small" id="mno">Abbrechen</button><button class="btn primary" id="myes">OK</button></div></div></div>
+</div>

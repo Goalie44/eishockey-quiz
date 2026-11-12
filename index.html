@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14181f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Hockey-Quiz">
+<title>Eishockey-Quiz</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#14181f;--muted:#5d6775;--line:#dfe4ea;--bg:#f6f7f9;--card:#fff;--yel:#FFD100;--red:#e0312b;--ok:#16794a;--okbg:#e5f5ec;--bad:#b42318;--badbg:#fdecea;--acc:#14181f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Barlow,system-ui,sans-serif;font-size:17px;line-height:1.45}
+.wrap{max-width:560px;margin:0 auto;padding:16px 14px 40px}
+h1,h2,.cond{font-family:"Barlow Condensed",Barlow,sans-serif;letter-spacing:.2px}
+h1{font-size:34px;margin:6px 0 4px;line-height:1.05}
+h2{font-size:24px;margin:0 0 8px}
+.muted{color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-weight:600;border-radius:12px;padding:12px 18px;border:1.5px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--ink);color:#fff}
+.btn.yel{background:var(--yel);border-color:var(--ink)}
+.btn.small{padding:8px 12px;font-size:15px;font-weight:500;border-width:1px;border-color:var(--line)}
+.btn:active{transform:scale(.98)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--muted);margin-bottom:6px}
+.bar{height:6px;background:var(--line);border-radius:6px;overflow:hidden;margin-bottom:12px}
+.bar i{display:block;height:100%;background:var(--yel);border-right:2px solid var(--ink);transition:width .3s}
+.tag{display:inline-block;font-size:13px;font-weight:600;padding:3px 9px;border-radius:20px;background:#eef1f4;color:#36404d}
+.tag.lvl{background:var(--yel);color:var(--ink)}
+.rinkbox{position:relative;background:#fff;border:1px solid var(--line);border-radius:16px;padding:8px}
+svg{display:block;width:100%;height:auto}
+.banner{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:var(--ink);color:#fff;font-weight:600;font-size:15px;padding:6px 14px;border-radius:20px;white-space:nowrap;opacity:0;transition:opacity .25s;pointer-events:none;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+.banner.on{opacity:1}
+.q{font-size:19px;font-weight:600;margin:14px 0 10px}
+.opts{display:grid;gap:9px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;font:inherit;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;color:var(--ink)}
+.opt b{flex:none;width:26px;height:26px;border-radius:50%;background:#eef1f4;display:flex;align-items:center;justify-content:center;font-size:14px}
+.opt:hover{border-color:#b9c2cc}
+.opt.ok{border-color:var(--ok);background:var(--okbg)}.opt.ok b{background:var(--ok);color:#fff}
+.opt.bad{border-color:var(--bad);background:var(--badbg)}.opt.bad b{background:var(--bad);color:#fff}
+.opt.dim{opacity:.55}
+.fb{margin-top:12px;padding:12px 14px;border-radius:12px;font-size:16px}
+.fb.ok{background:var(--okbg)}.fb.bad{background:var(--badbg)}
+.fb strong{display:block;margin-bottom:2px}
+.legend{display:flex;gap:14px;font-size:14px;color:var(--muted);margin:8px 2px 0;flex-wrap:wrap}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:5px}
+.big{font-family:"Barlow Condensed",sans-serif;font-size:64px;line-height:1;font-weight:700}
+.res li{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line);font-size:15px}
+.res ul{list-style:none;padding:0;margin:10px 0 0}
+.mark{flex:none;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700}
+.hlring{fill:none;stroke:#f08c00;stroke-width:3;stroke-dasharray:6 5;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.hide{display:none!important}
+.chap{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:16px}
+.chap:last-child{border-bottom:0}
+.lbl{display:block;font-size:14px;font-weight:600;color:var(--muted);margin:0 0 4px}
+.inp{display:block;width:100%;font:inherit;font-size:17px;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);margin:0 0 12px}
+.inp:focus{outline:none;border-color:var(--ink)}
+textarea.inp{resize:vertical}
+.full{width:100%}
+.err{color:var(--bad);font-size:14px;min-height:0;margin:-4px 0 10px}
+.err:empty{display:none}
+.names{display:grid;gap:8px;max-height:52vh;overflow:auto}
+.nm{display:flex;justify-content:space-between;align-items:center;text-align:left;font:inherit;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;color:var(--ink)}
+.nm:hover{border-color:#b9c2cc}
+.nm small{color:var(--muted);font-size:13px}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.5px}
+.demo{background:#fff4c2;color:#5c4400;font-size:14px;text-align:center;padding:8px 12px}
+.mrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.mrow:last-child{border-bottom:0}
+.mrow .who{min-width:0}
+.mrow .who b{display:block;font-weight:600}
+.mrow .who span{font-size:13px;color:var(--muted)}
+.minibar{height:5px;background:var(--line);border-radius:5px;overflow:hidden;margin-top:4px;width:120px;max-width:40vw}
+.minibar i{display:block;height:100%;background:var(--yel)}
+.acts{display:flex;gap:6px;flex:none}
+.acts .btn{padding:6px 9px;font-size:13px}
+.srow{display:grid;grid-template-columns:1fr 64px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.srow:last-child{border-bottom:0}
+.sbar{height:6px;background:var(--badbg);border-radius:6px;overflow:hidden;margin-top:4px}
+.sbar i{display:block;height:100%;background:var(--ok)}
+.modal{position:fixed;inset:0;background:rgba(20,24,31,.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:10}
+.mbox{max-width:420px;width:100%}
+.adminhide .adminonly{display:none!important}
+@media (min-width:900px) and (orientation:landscape){
+  body.wide .wrap{max-width:1180px}
+  body.wide .qgrid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;align-items:start}
+  body.wide .qright{padding-top:34px}
+  body.wide .rinkbox svg{max-height:calc(100vh - 150px);width:auto;margin:0 auto}
+  body.wide .q{margin-top:0}
+}
+@media (min-width:700px){.wrap{max-width:620px}}
+
+body{padding-bottom:env(safe-area-inset-bottom)}
+</style>
+</head>
+<body>
+<div style="height:10px;background:#14181f"></div><div style="height:8px;background:#FFD100"></div>
+<div id="demo" class="demo hide">Demo-Modus – ohne Datenbank, nur zum Ausprobieren. Code: <b>TEST-1234</b> oder <b>TRAINER-DEMO</b></div>
+<div class="wrap" id="wrap">
+
+<section id="boot"><p class="muted" style="margin-top:40px;text-align:center">Lädt …</p></section>
+
+<section id="login" class="hide">
+  <div class="cond muted" style="font-size:15px;font-weight:600">ANMELDEN</div>
+  <h1>Eishockey-Quiz</h1>
+  <div class="card" id="l1">
+    <label class="lbl" for="code">Mannschaftscode</label>
+    <input id="code" class="inp" autocomplete="off" autocapitalize="characters" placeholder="z. B. U15-K7QX">
+    <div class="err" id="e1"></div>
+    <button class="btn yel full" id="b1">Weiter</button>
+  </div>
+  <div class="card hide" id="l2">
+    <div class="row" style="justify-content:space-between;margin-bottom:6px"><strong id="tname"></strong><button class="btn small" id="back1">Code ändern</button></div>
+    <div class="muted" style="font-size:15px;margin-bottom:10px">Wer bist du?</div>
+    <input id="nfilter" class="inp" placeholder="Namen suchen" autocomplete="off">
+    <div id="names" class="names"></div>
+  </div>
+  <div class="card hide" id="l3">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px"><strong id="pname"></strong><button class="btn small" id="back2">Anderer Name</button></div>
+    <div id="pwOld">
+      <label class="lbl" for="pw">Passwort</label>
+      <input id="pw" class="inp" type="password" autocomplete="current-password">
+    </div>
+    <div id="pwNew" class="hide">
+      <p class="muted" style="margin:0 0 10px;font-size:15px">Du meldest dich zum ersten Mal an. Lege dein eigenes Passwort fest (mindestens 6 Zeichen) und merke es dir gut.</p>
+      <label class="lbl" for="pw1">Neues Passwort</label>
+      <input id="pw1" class="inp" type="password" autocomplete="new-password">
+      <label class="lbl" for="pw2">Passwort wiederholen</label>
+      <input id="pw2" class="inp" type="password" autocomplete="new-password">
+    </div>
+    <div class="err" id="e3"></div>
+    <button class="btn yel full" id="b3">Anmelden</button>
+    <p class="muted" style="font-size:13px;margin:10px 0 0">Passwort vergessen? Sag deinem Trainer Bescheid – er setzt es zurück.</p>
+  </div>
+</section>
+
+<section id="home" class="hide">
+  <div class="row" style="justify-content:space-between;margin-bottom:6px"><span class="cond muted" style="font-size:15px;font-weight:600" id="hteam"></span><button class="btn small" id="logout">Abmelden</button></div>
+  <h1 id="hello"></h1>
+  <div class="card" style="margin:12px 0 14px">
+    <div class="row" style="justify-content:space-between"><span class="cond" style="font-size:22px;font-weight:700">Kapitel 1</span><span class="tag lvl">U13+</span></div>
+    <div class="muted" style="font-size:15px;margin:2px 0 10px">Defensive Zone · Aufbau · Bully · Regelkunde · 13 Fragen</div>
+    <div style="display:flex;justify-content:space-between;font-weight:600;font-size:15px"><span id="hdone"></span><span id="hpct"></span></div>
+    <div class="bar" style="margin:6px 0 12px"><i id="hbar" style="width:0"></i></div>
+    <div class="row"><button class="btn yel" id="hstart">Starten</button><button class="btn hide" id="hfresh">Von vorne</button></div>
+    <div class="muted" id="hbest" style="font-size:14px;margin-top:10px"></div>
+  </div>
+  <div class="card muted" style="margin-bottom:14px;font-size:15px">Weitere Kapitel (Rush, offensive Zone, Special Teams, Forecheck …) folgen.</div>
+  <div class="legend"><span><span class="dot" style="background:var(--ink);border:2px solid var(--yel)"></span>Dein Team</span><span><span class="dot" style="background:var(--red)"></span>Gegner</span><span><span class="dot" style="background:var(--ink)"></span>Puck</span></div>
+  <button class="btn primary full hide" id="htrainer" style="margin-top:16px">Trainerbereich</button>
+</section>
+
+<section id="quiz" class="hide">
+  <div class="row" style="justify-content:space-between;margin-bottom:10px"><button class="btn small" id="menu">☰ Menü</button><span id="done" style="font-size:14px;font-weight:600"></span></div>
+  <div class="qgrid">
+    <div class="qleft">
+      <div class="top"><span id="prog">Frage 1 von 13</span><span class="row" style="gap:6px"><span class="tag" id="chap"></span><span class="tag lvl" id="lvl"></span></span></div>
+      <div class="bar"><i id="barfill" style="width:0"></i></div>
+      <div class="rinkbox"><div class="banner" id="banner"></div><svg id="rink" viewBox="0 0 400 420"></svg></div>
+    </div>
+    <div class="qright">
+      <div class="q" id="qtext"></div>
+      <div class="opts" id="opts"></div>
+      <div id="fb"></div>
+      <div class="row" style="margin-top:14px;justify-content:space-between">
+        <button class="btn small" id="prev">← Zurück</button>
+        <span class="row"><button class="btn small" id="replay">Nochmal ansehen</button><button class="btn primary hide" id="next">Weiter</button></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="result" class="hide">
+  <div class="cond muted" style="font-size:15px;font-weight:600">AUSWERTUNG</div>
+  <div class="card" style="margin:8px 0 14px;text-align:center">
+    <div class="big" id="pct">0 %</div>
+    <div id="score" style="font-weight:600;margin-top:4px"></div>
+    <div id="verdict" class="muted" style="margin-top:6px"></div>
+  </div>
+  <div class="row" style="margin-bottom:8px"><button class="btn yel" id="retryWrong">Fehler üben</button><button class="btn" id="toHome">Zum Menü</button></div>
+  <div class="res card"><strong>Deine Antworten</strong><ul id="reslist"></ul></div>
+</section>
+
+<section id="trainer" class="hide">
+  <div class="row" style="justify-content:space-between;margin-bottom:6px"><button class="btn small" id="tback">← Menü</button><span class="tag" id="trole"></span></div>
+  <h1>Trainerbereich</h1>
+  <div class="card" style="margin:10px 0 14px">
+    <label class="lbl" for="tsel">Mannschaft</label>
+    <select id="tsel" class="inp"></select>
+    <div class="row" style="justify-content:space-between;margin-top:4px">
+      <span>Code: <b id="tcode" class="mono"></b></span>
+      <span class="row" style="gap:6px"><button class="btn small" id="tcopy">Kopieren</button><button class="btn small adminonly" id="tnewcode">Neuer Code</button></span>
+    </div>
+    <div class="muted" id="tcopymsg" style="font-size:13px;margin-top:6px"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="row" style="justify-content:space-between"><strong>Spieler und Trainer</strong><span class="muted" id="tcount" style="font-size:14px"></span></div>
+    <div id="tlist"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <strong>Hinzufügen</strong>
+    <p class="muted" style="font-size:14px;margin:4px 0 8px">Ein Name pro Zeile, z. B. „Müller T“. Mehrere auf einmal gehen auch.</p>
+    <textarea id="tnames" class="inp" rows="4" placeholder="Müller T&#10;Schmidt L"></textarea>
+    <div class="row" style="margin-top:8px">
+      <select id="trolesel" class="inp" style="width:auto;margin:0"><option value="player">als Spieler</option><option value="trainer" class="adminonly">als Trainer</option></select>
+      <button class="btn yel" id="tadd">Hinzufügen</button>
+    </div>
+    <div class="err" id="tadderr"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <strong>Fragen-Auswertung (Kapitel 1)</strong>
+    <p class="muted" style="font-size:14px;margin:4px 0 8px">Wie viele der Antworten waren richtig – so siehst du, was du im Training nochmal aufgreifen solltest.</p>
+    <div id="tstats"></div>
+  </div>
+
+  <div class="card adminonly" style="margin-bottom:14px">
+    <strong>Neue Mannschaft</strong>
+    <div class="row" style="margin-top:8px">
+      <input id="tnewteam" class="inp" style="flex:1;margin:0" placeholder="z. B. U15">
+      <button class="btn" id="tcreate">Anlegen</button>
+    </div>
+    <div class="err" id="tcreateerr"></div>
+  </div>
+</section>
+
+<div id="modal" class="modal hide"><div class="card mbox"><div id="mtext" style="margin-bottom:14px"></div><div class="row" style="justify-content:flex-end"><button class="btn small" id="mno">Abbrechen</button><button class="btn primary" id="myes">OK</button></div></div></div>
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+
+const RINK={
+zone:{vb:'0 0 400 420',svg:`
+<path d="M5 5H395V330A80 80 0 0 1 315 410H85A80 80 0 0 1 5 330Z" fill="#f3f8fb" stroke="#1d2733" stroke-width="3"/>
+<rect x="5" y="34" width="390" height="12" fill="#2f6fd6"/>
+<line x1="8" y1="350" x2="392" y2="350" stroke="#d6453d" stroke-width="2"/>
+<path d="M172 350A28 28 0 0 1 228 350Z" fill="#bfe0f7" stroke="#d6453d" stroke-width="1.5"/>
+<rect x="186" y="350" width="28" height="14" rx="3" fill="none" stroke="#1d2733" stroke-width="2.5"/>
+<circle cx="110" cy="260" r="48" fill="none" stroke="#d6453d" stroke-width="2"/>
+<circle cx="290" cy="260" r="48" fill="none" stroke="#d6453d" stroke-width="2"/>
+<circle cx="110" cy="260" r="4" fill="#d6453d"/><circle cx="290" cy="260" r="4" fill="#d6453d"/>
+<g stroke="#d6453d" stroke-width="2"><line x1="50" y1="252" x2="62" y2="252"/><line x1="50" y1="268" x2="62" y2="268"/><line x1="158" y1="252" x2="170" y2="252"/><line x1="158" y1="268" x2="170" y2="268"/><line x1="230" y1="252" x2="242" y2="252"/><line x1="230" y1="268" x2="242" y2="268"/><line x1="338" y1="252" x2="350" y2="252"/><line x1="338" y1="268" x2="350" y2="268"/></g>
+<text x="200" y="400" text-anchor="middle" font-size="12" fill="#8a94a2" font-family="Barlow">unser Tor</text>`},
+full:{vb:'0 0 600 300',svg:`
+<rect x="5" y="5" width="590" height="290" rx="70" fill="#f3f8fb" stroke="#1d2733" stroke-width="3"/>
+<rect x="195" y="5" width="10" height="290" fill="#2f6fd6"/><rect x="395" y="5" width="10" height="290" fill="#2f6fd6"/>
+<line x1="300" y1="5" x2="300" y2="295" stroke="#d6453d" stroke-width="5"/>
+<line x1="40" y1="15" x2="40" y2="285" stroke="#d6453d" stroke-width="2"/><line x1="560" y1="15" x2="560" y2="285" stroke="#d6453d" stroke-width="2"/>
+<path d="M40 128A22 22 0 0 1 40 172Z" fill="#bfe0f7"/><path d="M560 128A22 22 0 0 0 560 172Z" fill="#bfe0f7"/>
+<rect x="26" y="139" width="14" height="22" rx="3" fill="none" stroke="#1d2733" stroke-width="2.5"/><rect x="560" y="139" width="14" height="22" rx="3" fill="none" stroke="#1d2733" stroke-width="2.5"/>
+<circle cx="300" cy="150" r="40" fill="none" stroke="#2f6fd6" stroke-width="2"/>
+<g fill="none" stroke="#d6453d" stroke-width="2"><circle cx="100" cy="80" r="38"/><circle cx="100" cy="220" r="38"/><circle cx="500" cy="80" r="38"/><circle cx="500" cy="220" r="38"/></g>
+<g fill="#d6453d"><circle cx="100" cy="80" r="3.5"/><circle cx="100" cy="220" r="3.5"/><circle cx="500" cy="80" r="3.5"/><circle cx="500" cy="220" r="3.5"/><circle cx="240" cy="80" r="3.5"/><circle cx="240" cy="220" r="3.5"/><circle cx="360" cy="80" r="3.5"/><circle cx="360" cy="220" r="3.5"/></g>
+<text x="300" y="286" text-anchor="middle" font-size="12" fill="#8a94a2" font-family="Barlow">Wir greifen an →</text>`}};
+
+const Z={T:[200,338],gD1:[100,55],gD2:[300,55]};
+const S=(o)=>Object.assign({},Z,o);
+
+const QS=[
+{id:'k1-01',chap:'Defensive Zone',lvl:'U13+',rink:'zone',
+ setup:S({D1:[250,230],D2:[150,240],F1:[300,140],F2:[200,150],F3:[120,140],gF1:[310,300],gF2:[250,190],gF3:[130,200],P:[318,306]}),
+ intro:[{t:2200,m:{gF1:[348,372],P:[356,378],D1:[322,360],F1:[318,282],gF2:[240,292],F2:[245,215],F3:[160,215],D2:[178,222],gF3:[140,250]}}],
+ q:'Der Gegner hat die Scheibe in der Ecke, D1 geht drauf. Wo gehört D2 jetzt hin?',
+ o:['Vors Tor an den kurzen Pfosten – Mitte schützen','Auch in die Ecke – zu zweit auf den Puck','Hoch an die blaue Linie, um einen Pass abzufangen','Hinter das eigene Tor'],
+ ex:'D1 nimmt Zeit und Raum, F1 unterstützt. D2 steht am kurzen Pfosten und schützt die Mitte, F2 hält die Mitte, F3 sichert den Slot.',
+ solve:[{t:1000,m:{D2:[230,322],F2:[270,210],F3:[205,232]},hl:[230,322,22],txt:'D2 am kurzen Pfosten'}]},
+
+{id:'k1-02',chap:'Defensive Zone',lvl:'U13+',rink:'zone',
+ setup:S({D1:[330,330],D2:[220,320],F1:[290,180],F2:[270,205],F3:[198,232],gF1:[320,300],gF2:[230,280],gF3:[120,200],P:[300,330]}),
+ intro:[{t:1800,m:{P:[352,386],gF1:[338,366],D1:[355,355]},txt:'Freie Scheibe in der Ecke!'}],
+ q:'Das Spiel steht, die Scheibe liegt frei in der Ecke. Was macht F1?',
+ o:['Unterstützt D1 in der Ecke – wir überladen','Bleibt hoch an der blauen Linie','Fährt schon mal Richtung Angriff','Stellt sich direkt vors Tor'],
+ ex:'Bei gestopptem Spiel oder freier Scheibe überladen wir: Wir schaffen Überzahl an der Scheibe. F1 unterstützt in der Ecke.',
+ solve:[{t:1000,m:{F1:[325,376]},hl:[343,376,42],txt:'Überladen: 2 gegen 1 an der Scheibe'}]},
+
+{id:'k1-03',chap:'Defensive Zone',lvl:'U13+',rink:'zone',
+ setup:S({D1:[240,385],D2:[170,330],F1:[300,250],F2:[220,230],F3:[130,240],gF1:[180,392],gF2:[260,250],gF3:[120,180],P:[205,396]}),
+ intro:[{t:1600,m:{D1:[217,393],gF1:[193,393],gF2:[214,262],F1:[285,315],F2:[262,215],F3:[150,236]},txt:'Zweikampf hinter dem Tor'}],
+ q:'Die Scheibe ist hinter unserem Tor. Überladen wir hier – also gehen wir zu dritt drauf?',
+ o:['Nein – hinter dem eigenen Tor überladen wir nicht, sonst ist der Slot frei','Ja, alle hin und schnell die Scheibe holen','Ja, aber nur die drei Stürmer','Ja, F3 geht als Erster dazu'],
+ ex:'Hinter dem eigenen Tor überladen wir nicht. Das Risiko, dass ein Gegner frei im Slot steht, ist zu groß. F1 übernimmt den Gegner im Slot, F3 bleibt zwischen F1 und dem gegnerischen F3.',
+ solve:[{t:1000,m:{F1:[222,286],F3:[160,226],D2:[178,325]},hl:[218,274,34],txt:'F1 nimmt den Gegner im Slot'}]},
+
+{id:'k1-04',chap:'Defensive Zone',lvl:'U13+',rink:'zone',
+ setup:S({D1:[335,360],F1:[310,330],D2:[240,320],F2:[260,250],F3:[150,230],gF1:[350,375],gF2:[230,290],gF3:[150,180],P:[358,384]}),
+ intro:[{t:1500,m:{F3:[170,225],F2:[280,205],gF3:[175,190]},txt:'Wir überladen in der Ecke'}],
+ q:'Wir überladen in der Ecke. Wer ist jetzt der „Feuerwehrmann“ und was macht er?',
+ o:['F3 – schützt den Slot, dreht den Kopf und ist bereit zu reagieren','F1 – geht als Dritter mit in die Ecke','D2 – fährt hinter das Tor','F2 – fährt hoch zur blauen Linie'],
+ ex:'F3 ist der Feuerwehrmann: Er schützt den Slot, dreht ständig den Kopf und schützt das Tor, während wir in der Ecke überladen.',
+ solve:[{t:900,m:{F3:[203,232]},hl:[203,232,28],txt:'F3 = Feuerwehrmann'}]},
+
+{id:'k1-05',chap:'Defensive Zone',lvl:'U13+',rink:'zone',
+ setup:S({D1:[335,360],F1:[310,320],D2:[230,325],F2:[275,210],F3:[200,235],gF1:[350,375],gF2:[220,300],gF3:[140,200],P:[355,382]}),
+ intro:[{t:1300,m:{P:[308,62]},txt:'Pass hoch zum Verteidiger'}],
+ q:'Der Puck geht hoch zum gegnerischen Verteidiger. Was machen F2 und F3?',
+ o:['Erst Schussbahn und Mitte zu – dann raus zum D','Sofort mit vollem Tempo auf den D rausstürmen','Stehen bleiben und abwarten','Schon Richtung Angriff starten'],
+ ex:'Erst Schussbahn und Mitte mit langem Schläger schließen, dann rauslaufen. Dabei auf den Gegner schauen, nicht auf die Scheibe – sonst wirst du ausgespielt. D1, F1 und D2 halten unten die Abwehrseite (Box-out).',
+ solve:[{t:700,m:{F2:[282,165,195],F3:[200,178,-20]},txt:'1. Schussbahn und Mitte zu'},{t:700,m:{F2:[296,100,250]},hl:[296,96,24],txt:'2. Dann raus zum D'}]},
+
+{id:'k1-06',chap:'Defensive Zone',lvl:'U13+',rink:'zone',
+ setup:S({D1:[320,240],D2:[215,318],F1:[300,195],F2:[262,165],F3:[190,222],gF1:[360,280],gF2:[100,240],gF3:[200,120],P:[368,286]}),
+ intro:[{t:1400,m:{gF1:[355,230],P:[363,236],D1:[332,252],F1:[322,212],F2:[285,128],F3:[212,198],D2:[198,304],gF2:[95,256]}}],
+ q:'Der Gegner an der Bande will quer durch die Mitte zum freien Mann passen. Was macht F3?',
+ o:['Schläger aufs Eis, Mitte zu – keine Pässe durch die Box','Auch zum Puckführenden fahren','Sich vors eigene Tor stellen','Hoch zur blauen Linie fahren'],
+ ex:'Keine Pässe durch die Box! F1 unterstützt D1 eng an der Bande, F2 steht näher am gegnerischen D. F3 ist für die Mitte zuständig: Schläger auf dem Eis, Passbahn zu.',
+ solve:[{t:800,m:{F3:[246,224,90]},hl:[246,232,26]},{t:450,m:{P:[250,244]},txt:'Pass geblockt'}]},
+
+{id:'k1-07',chap:'Regelkunde',lvl:'Alle',rink:'full',
+ setup:{T:[52,150],gT:[548,150],D1:[130,200],F1:[250,120],gF1:[350,200],gD1:[480,110],P:[140,204]},
+ intro:[{t:1800,m:{P:[575,72],gD1:[520,96]}}],
+ q:'Wir spielen die Scheibe aus der eigenen Hälfte. Sie rutscht unberührt über die gegnerische Torlinie. Was entscheidet der Schiri?',
+ o:['Unerlaubter Weitschuss (Icing)','Abseits','Weiterspielen','2 Minuten Strafe für uns'],
+ ex:'Icing: Scheibe von hinter der Mittellinie unberührt über die gegnerische Torlinie. Bully in unserem Verteidigungsdrittel. In Unterzahl ist Icing erlaubt.',
+ solve:[{t:900,m:{P:[100,80]},hl:[100,80,30],txt:'Pfiff: Bully im eigenen Drittel'}]},
+
+{id:'k1-08',chap:'Aufbau',lvl:'U13+',rink:'zone',
+ setup:S({D1:[70,360],D2:[220,320],F1:[110,230],F2:[200,230],F3:[170,280],gF1:[60,388],gF2:[220,270],gF3:[300,200],P:[52,382]}),
+ intro:[{t:1200,m:{D1:[55,372],P:[63,378],gF1:[88,388]},txt:'Scheibe gewonnen!'}],
+ q:'D1 hat die Scheibe in der Ecke gewonnen. Wer muss jetzt anspielbar sein?',
+ o:['F1 und F2 – D2 nur, wenn der D-zu-D-Pass frei ist; F3 unterstützt bei Druck','Nur F1','Niemand – D1 schießt die Scheibe einfach raus','Nur die beiden Verteidiger'],
+ ex:'Nach Scheibengewinn sind F1 und F2 anspielbar. D2 ist nur anspielbar, wenn der Weg für den D-zu-D-Pass frei ist und wir das Spiel auf die andere Seite verlagern wollen. F3 unterstützt bei Druck sofort. F2 und F3 sind gemeinsam dafür verantwortlich, dass wir aus der DZ rauskommen.',
+ solve:[{t:1100,m:{F1:[30,240],F2:[120,176],D2:[236,386],F3:[110,318]},txt:'F1 und F2 anspielbar'},{t:600,m:{P:'F1'},txt:'Pass zu F1'}]},
+
+{id:'k1-09',chap:'Aufbau',lvl:'U13+',rink:'zone',
+ setup:S({D1:[320,385],D2:[180,330],F1:[355,260],F2:[372,178],F3:[200,240],gF1:[280,370],gF2:[300,330],gF3:[236,196],gF4:[160,226],gD2:[352,166],gD1:[150,90],P:[328,390]}),
+ intro:[{t:1300,m:{gF1:[308,386],gF2:[322,352],D1:[340,388],P:[348,393],F1:[378,318]},txt:'Druck von zwei Seiten'}],
+ q:'D1 wird von zwei Gegnern gejagt, kein Mitspieler steht frei. Was ist eine gute Lösung?',
+ o:['Bandenpass hoch zu F2 – F1 unterstützt eng, die Scheibe hat ein Ziel','Blind in die Mitte passen','Die Scheibe in den Slot spielen','Stehen bleiben und warten, bis gepfiffen wird'],
+ ex:'Grundsätzlich wollen wir Pässe von Schläger zu Schläger. Dafür braucht D1 enge Unterstützung von F1. Ist kein Pass frei, ist ein Bandenpass zu F2 eine gute Lösung – die Scheibe hat immer ein Ziel, nie blind durch die Mitte.',
+ solve:[{t:500,m:{P:[389,345]},txt:'F1 unterstützt eng'},{t:800,m:{P:[383,168],F2:[374,158]},txt:'Bandenpass zu F2'}]},
+
+{id:'k1-10',chap:'Regelkunde',lvl:'Alle',rink:'full',
+ setup:{T:[52,150],gT:[548,150],F1:[250,100],F2:[330,180],gD1:[460,120],gD2:[450,205],P:[340,184]},
+ intro:[{t:1600,m:{F1:[450,92],F2:[378,180],P:[388,184],gD1:[470,130]}}],
+ q:'F1 fährt in die Angriffszone, bevor die Scheibe die blaue Linie überquert hat. Dann kommt der Pass. Was passiert?',
+ o:['Abseits – Pfiff','Alles erlaubt, weiterspielen','Icing','2 Minuten Strafe für F1'],
+ ex:'Abseits: Die Scheibe muss die blaue Linie komplett überqueren, bevor ein Angreifer mit beiden Schlittschuhen in der Zone ist. Danach gibt es Bully in der neutralen Zone.',
+ solve:[{t:600,m:{P:[444,98]},txt:'Pfiff: Abseits'},{t:700,m:{P:[360,80]},hl:[360,80,26],txt:'Bully in der neutralen Zone'}]},
+
+{id:'k1-11',chap:'Bully',lvl:'U13+',rink:'zone',
+ setup:S({C:[110,274],gC:[110,246],D1:[55,274],gW1:[55,246],F2:[165,274],F3:[189,276],D2:[178,297],gW2:[165,246],gD1:[55,95],gD2:[172,92],P:[110,260]}),
+ intro:[{t:900,m:{P:[106,322],D1:[98,326],C:[110,266]},txt:'Bully gewonnen!'}],
+ q:'Bully gewonnen, die Scheibe ist bei D1. Wie spielen wir sauber raus?',
+ o:['D1 spielt D2 direkt hinters Tor – D2 macht das Wheel und spielt F3 über den Hashmarks an','D1 spielt quer durch den Slot zu F2','D1 schießt die Scheibe sofort hoch über die blaue Linie','D1 fährt alleine durch die Mitte'],
+ ex:'D1 holt die Scheibe inside der Dots und spielt D2 direkt hinters Tor. D2 macht das Wheel hinter dem Tor und spielt F3 über den Hashmarks an. F2 unterstützt, C beobachtet und unterstützt eng, D1 geht zurück zum Tor.',
+ solve:[{t:800,m:{D2:[190,388],P:[200,384]},txt:'D1 spielt D2 hinters Tor'},{t:1000,m:{D2:[240,388],P:[249,381],D1:[160,328],C:[112,305],F3:[344,246],F2:[300,150]},txt:'D2 Wheel hinter dem Tor'},{t:600,m:{P:'F3'},hl:[344,246,24],txt:'Pass zu F3 über den Hashmarks'}]},
+
+{id:'k1-12',chap:'Bully',lvl:'U13+',rink:'zone',
+ setup:S({C:[110,274],gC:[110,246],D1:[55,274],gW1:[55,246],F2:[165,274],F3:[189,276],D2:[178,297],gW2:[165,246],gD1:[55,95],gD2:[172,92],P:[110,260]}),
+ intro:[{t:1000,m:{P:[66,100],gD1:[60,98],gC:[110,254]},txt:'Bully verloren'}],
+ q:'Bully verloren, der gegnerische Verteidiger hat die Scheibe. Wohin gehen unsere Außenstürmer?',
+ o:['Raus zu den gegnerischen Verteidigern','Alle fünf gehen auf den Puck','Sie bleiben am Bullykreis stehen','Sie fahren vors eigene Tor'],
+ ex:'Nach verlorenem Bully finden wir die Struktur Box + 1. Die Außenstürmer sind den gegnerischen D’s zugeordnet, wenn diese die Scheibe bekommen. F3 hält zuerst etwas Abstand, damit die Mitte nicht frei wird. Kommt die Scheibe rüber zum anderen D, geht F3 höher und F2 lässt sich in die Mitte fallen. D1 und D2 stehen zwischen Gegner und Tor und halten sie mit Box-out vom Tor weg.',
+ solve:[{t:1000,m:{F2:[74,124],F3:[182,176],C:[118,226],D1:[152,302,-90],D2:[236,300,-90],gW1:[125,250],gW2:[215,246]},txt:'Außenstürmer zu den D’s'},{t:700,m:{gW1:[150,275],gW2:[234,273]},hl:[193,290,58],txt:'Box-out: Gegner kommt nicht vors Tor'},{t:900,m:{P:[180,96],gD1:[62,100],F3:[176,122],F2:[115,188]},hl:0,txt:'D-zu-D: F3 geht höher, F2 lässt sich fallen'}]},
+
+{id:'k1-13',chap:'Regelkunde',lvl:'Alle',rink:'full',
+ setup:{T:[52,150],gT:[548,150],F1:[440,90],F2:[350,200],gD1:[470,200],gD2:[480,110],P:[356,204]},
+ intro:[{t:1500,m:{P:[522,232],gD1:[508,224]},txt:'Linienrichter hebt den Arm'}],
+ q:'F1 war schon in der Zone, als die Scheibe reingespielt wurde. Der Linienrichter hebt den Arm, pfeift aber nicht. Was müssen wir tun?',
+ o:['Alle unsere Spieler verlassen die Zone bzw. berühren die blaue Linie – dann wieder angreifen','Sofort zur Scheibe fahren','Nichts – das ist kein Abseits','Stehen bleiben, bis gepfiffen wird'],
+ ex:'Verzögertes Abseits: Solange wir die Scheibe nicht berühren, läuft das Spiel weiter. Sind alle unsere Spieler raus oder an der blauen Linie, nimmt der Linienrichter den Arm runter. Berührt einer von uns vorher die Scheibe: Pfiff.',
+ solve:[{t:900,m:{F1:[394,100]},hl:[400,100,22],txt:'F1 an der blauen Linie'},{t:900,m:{F1:[480,180]},txt:'Arm runter – weiter geht’s'}]}
+];
+
+
+const NS='http://www.w3.org/2000/svg';
+let pos={},els={},token=0,order=[],idx=0,answers={},cur=null,shuffled=[];
+
+let ang={},curA={},stickOn=false;
+const STK='<g class="stk"><line x1="11" y1="0" x2="29" y2="0" stroke="#14181f" stroke-width="3" stroke-linecap="round"/><line x1="29" y1="0" x2="32" y2="7" stroke="#14181f" stroke-width="4.5" stroke-linecap="round"/></g>';
+function hasStick(k){return stickOn&&k!=='P'&&k!=='T'&&k[0]!=='g'}
+function autoA(k){const p=pos.P;if(!p)return 90;return Math.atan2(p[1]-pos[k][1],p[0]-pos[k][0])*180/Math.PI}
+function drawSticks(){for(const k in els){if(!hasStick(k))continue;const a=ang[k]!=null?ang[k]:autoA(k);curA[k]=a;els[k].querySelector('.stk').setAttribute('transform','rotate('+a+')')}}
+function lerpA(a,b,e){let d=((b-a)%360+540)%360-180;return a+d*e}
+function mkEnt(k){
+  const g=document.createElementNS(NS,'g');
+  if(k==='P'){g.innerHTML='<circle r="5.5" fill="#14181f" stroke="#FFD100" stroke-width="1.5"/>';return g}
+  const opp=k[0]==='g', lab=opp?k.slice(1):k;
+  g.innerHTML=opp
+   ?`<circle r="12" fill="#e0312b" stroke="#fff" stroke-width="1.5"/><text y="4" text-anchor="middle" font-size="10.5" font-weight="600" fill="#fff" font-family="Barlow">${lab}</text>`
+   :(hasStick(k)?STK:'')+`<circle r="14" fill="#14181f" stroke="#FFD100" stroke-width="2"/><text y="4" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="Barlow">${lab}</text>`;
+  return g;
+}
+function setPos(k,p){pos[k]=p;els[k].setAttribute('transform',`translate(${p[0]} ${p[1]})`)}
+function build(q){
+  const r=RINK[q.rink],svg=$('rink');
+  svg.setAttribute('viewBox',r.vb);
+  svg.innerHTML=r.svg+'<g id="hl"></g><g id="ents"></g>';
+  pos={};els={};ang={};curA={};stickOn=q.rink==='zone';
+  const keys=Object.keys(q.setup).sort((a,b)=>(a==='P')-(b==='P')||(b[0]==='g')-(a[0]==='g'));
+  keys.forEach(k=>{els[k]=mkEnt(k);$('ents').appendChild(els[k]);setPos(k,q.setup[k]);if(q.setup[k][2]!=null)ang[k]=q.setup[k][2]});
+  drawSticks();
+  hl(null);banner('');
+}
+function hl(h){const g=$('hl');if(!g)return;g.innerHTML=h?`<circle class="hlring" cx="${h[0]}" cy="${h[1]}" r="${h[2]}"/>`:''}
+function banner(t){const b=$('banner');if(t){b.textContent=t;b.classList.add('on')}else b.classList.remove('on')}
+function targets(s){
+  const tg={};for(const k in s.m){if(k!=='P'||typeof s.m.P!=='string')tg[k]=s.m[k]}
+  if(typeof s.m.P==='string'){const b=tg[s.m.P]||pos[s.m.P];tg.P=[b[0]+9,b[1]-9]}
+  return tg;
+}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function tween(tg,dur,tk){
+  const from={},fa={};for(const k in tg){from[k]=pos[k].slice();if(tg[k].length>2){if(tg[k][2]===null)ang[k]=null;else fa[k]=curA[k]!=null?curA[k]:0}}
+  return new Promise(res=>{const t0=performance.now();
+    function f(t){if(tk!==token)return res();let k=Math.min(1,(t-t0)/dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      for(const id in tg){setPos(id,[from[id][0]+(tg[id][0]-from[id][0])*e,from[id][1]+(tg[id][1]-from[id][1])*e]);if(id in fa)ang[id]=lerpA(fa[id],tg[id][2],e)}
+      drawSticks();
+      k<1?requestAnimationFrame(f):res()}
+    requestAnimationFrame(f)})
+}
+async function play(steps,tk){
+  for(const s of steps){if(tk!==token)return false;
+    if(s.txt!==undefined)banner(s.txt);if(s.hl!==undefined)hl(s.hl||null);
+    await tween(targets(s),s.t||1000,tk);await wait(250)}
+  return tk===token;
+}
+function jump(steps){steps.forEach(s=>{const tg=targets(s);for(const k in tg){setPos(k,tg[k]);if(tg[k].length>2)ang[k]=tg[k][2]}});drawSticks()}
+
+
+const CH='k1';
+const $=id=>document.getElementById(id);
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CODECH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const randCode=n=>Array.from({length:n},()=>CODECH[Math.floor(Math.random()*CODECH.length)]).join('');
+
+/* ================= Backend: Supabase ================= */
+function supaAPI(cfg){
+  const sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+  const chk=({data,error})=>{if(error)throw new Error(error.message);return data};
+  let meCache=null;
+  return {
+    async roster(code){return chk(await sb.rpc('team_roster',{p_code:code}))||[]},
+    async signIn(code,memberId,pw){
+      const email=chk(await sb.rpc('login_email',{p_code:code,p_member:memberId}));
+      if(!email)throw new Error('Zugang nicht gefunden. Frag deinen Trainer.');
+      const r=await sb.auth.signInWithPassword({email,password:pw});
+      if(r.error)throw new Error('Passwort falsch.');
+    },
+    async signUp(code,memberId,pw){
+      const email='m'+memberId.replace(/-/g,'').slice(0,12)+randCode(5).toLowerCase()+'@ehc-quiz.app';
+      const r=await sb.auth.signUp({email,password:pw});
+      if(r.error)throw new Error(r.error.message.includes('Password')?'Passwort zu kurz (mindestens 6 Zeichen).':r.error.message);
+      if(!r.data.session)throw new Error('Einrichtung unvollständig: In Supabase muss „Confirm email“ ausgeschaltet sein.');
+      const ok=chk(await sb.rpc('claim_member',{p_code:code,p_member:memberId,p_email:email}));
+      if(!ok){await sb.auth.signOut();throw new Error('Dieser Name ist schon vergeben. Frag deinen Trainer.')}
+    },
+    async me(){const {data:s}=await sb.auth.getSession();if(!s.session)return null;
+      const d=chk(await sb.rpc('me'));meCache=d&&d[0]||null;return meCache},
+    async hasSession(){const {data:s}=await sb.auth.getSession();return !!s.session},
+    async signOut(){await sb.auth.signOut();meCache=null},
+    async loadProgress(){return chk(await sb.from('progress').select('question_id,ok,choice').eq('member_id',meCache.id).eq('chapter',CH))},
+    async saveAnswer(qid,ok,choice){chk(await sb.from('progress').upsert({member_id:meCache.id,chapter:CH,question_id:qid,ok,choice,answered_at:new Date().toISOString()}))},
+    async resetProgress(){chk(await sb.from('progress').delete().eq('member_id',meCache.id).eq('chapter',CH))},
+    async saveAttempt(score,total){chk(await sb.from('attempts').insert({member_id:meCache.id,chapter:CH,score,total}))},
+    async best(){const d=chk(await sb.from('attempts').select('score,total').eq('member_id',meCache.id).eq('chapter',CH));
+      return d.length?Math.max(...d.map(a=>Math.round(a.score/a.total*100))):null},
+    async teams(){return chk(await sb.from('teams').select('id,name,code').order('name'))},
+    async members(teamId){return chk(await sb.from('members').select('id,display_name,role,user_id,progress(question_id,ok,chapter),attempts(score,total,chapter)').eq('team_id',teamId).order('display_name'))
+      .map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.user_id,progress:(m.progress||[]).filter(p=>p.chapter===CH),best:bestOf(m.attempts)}))},
+    async addMembers(teamId,names,role){chk(await sb.from('members').insert(names.map(n=>({team_id:teamId,display_name:n,role}))))},
+    async removeMember(id){chk(await sb.from('members').delete().eq('id',id))},
+    async resetLogin(id){if(!chk(await sb.rpc('reset_login',{p_member:id})))throw new Error('Keine Berechtigung.')},
+    async createTeam(name){const code=(name.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,6)||'TEAM')+'-'+randCode(4);
+      return chk(await sb.from('teams').insert({name,code}).select('id,name,code').single())},
+    async newCode(team){const code=team.code.split('-')[0]+'-'+randCode(4);chk(await sb.from('teams').update({code}).eq('id',team.id));return code}
+  };
+}
+function bestOf(att){const a=(att||[]).filter(x=>x.chapter===CH);return a.length?Math.max(...a.map(x=>Math.round(x.score/x.total*100))):null}
+
+/* ================= Backend: Demo (lokal) ================= */
+function mockAPI(){
+  const K='ehq-demo-db';
+  let db;try{db=JSON.parse(localStorage.getItem(K)||'null')}catch(e){}
+  if(!db){db={teams:[{id:'t1',name:'Test U15',code:'TEST-1234'},{id:'t0',name:'Trainer',code:'TRAINER-DEMO'}],
+    members:[{id:'m1',team_id:'t1',display_name:'Muster M',role:'player'},{id:'m2',team_id:'t1',display_name:'Beispiel B',role:'player'},{id:'m3',team_id:'t1',display_name:'Coach C',role:'trainer'},{id:'m0',team_id:'t0',display_name:'Sebastian',role:'admin'}],
+    progress:[],attempts:[],session:null}}
+  const save=()=>{try{localStorage.setItem(K,JSON.stringify(db))}catch(e){}};
+  const team=code=>db.teams.find(t=>t.code.toUpperCase()===code.trim().toUpperCase());
+  const meM=()=>db.members.find(m=>m.id===db.session);
+  const uid=()=>'x'+Math.random().toString(36).slice(2,10);
+  return {
+    async roster(code){const t=team(code);if(!t)return[];return db.members.filter(m=>m.team_id===t.id).sort((a,b)=>a.display_name.localeCompare(b.display_name)).map(m=>({id:m.id,display_name:m.display_name,claimed:!!m.pw,team_name:t.name}))},
+    async signIn(code,id,pw){const m=db.members.find(x=>x.id===id);if(!m||m.pw!==pw)throw new Error('Passwort falsch.');db.session=id;save()},
+    async signUp(code,id,pw){if(pw.length<6)throw new Error('Passwort zu kurz (mindestens 6 Zeichen).');const m=db.members.find(x=>x.id===id);if(m.pw)throw new Error('Dieser Name ist schon vergeben.');m.pw=pw;db.session=id;save()},
+    async me(){const m=meM();if(!m)return null;const t=db.teams.find(t=>t.id===m.team_id);return {id:m.id,display_name:m.display_name,role:m.role,team_id:m.team_id,team_name:t.name}},
+    async hasSession(){return !!db.session},
+    async signOut(){db.session=null;save()},
+    async loadProgress(){return db.progress.filter(p=>p.member_id===db.session&&p.chapter===CH)},
+    async saveAnswer(qid,ok,choice){db.progress=db.progress.filter(p=>!(p.member_id===db.session&&p.chapter===CH&&p.question_id===qid));db.progress.push({member_id:db.session,chapter:CH,question_id:qid,ok,choice});save()},
+    async resetProgress(){db.progress=db.progress.filter(p=>!(p.member_id===db.session&&p.chapter===CH));save()},
+    async saveAttempt(score,total){db.attempts.push({member_id:db.session,chapter:CH,score,total});save()},
+    async best(){return bestOf(db.attempts.filter(a=>a.member_id===db.session))},
+    async teams(){const m=meM();return db.teams.filter(t=>m.role==='admin'||t.id===m.team_id).sort((a,b)=>a.name.localeCompare(b.name))},
+    async members(tid){return db.members.filter(m=>m.team_id===tid).sort((a,b)=>a.display_name.localeCompare(b.display_name)).map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.pw,progress:db.progress.filter(p=>p.member_id===m.id&&p.chapter===CH),best:bestOf(db.attempts.filter(a=>a.member_id===m.id))}))},
+    async addMembers(tid,names,role){names.forEach(n=>db.members.push({id:uid(),team_id:tid,display_name:n,role}));save()},
+    async removeMember(id){db.members=db.members.filter(m=>m.id!==id);db.progress=db.progress.filter(p=>p.member_id!==id);save()},
+    async resetLogin(id){const m=db.members.find(x=>x.id===id);delete m.pw;save()},
+    async createTeam(name){const t={id:uid(),name,code:(name.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,6)||'TEAM')+'-'+randCode(4)};db.teams.push(t);save();return t},
+    async newCode(team){const t=db.teams.find(x=>x.id===team.id);t.code=t.code.split('-')[0]+'-'+randCode(4);save();return t.code}
+  };
+}
+
+const CFG=window.QUIZ_CONFIG||{};
+const LIVE=!!(CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY&&window.supabase);
+const API=LIVE?supaAPI(CFG):mockAPI();
+if(!LIVE)$('demo').classList.remove('hide');
+
+/* ================= Navigation ================= */
+let ME=null;
+function show(id){['boot','login','home','quiz','result','trainer'].forEach(s=>$(s).classList.toggle('hide',s!==id));
+  document.body.classList.toggle('wide',id==='quiz');window.scrollTo(0,0)}
+function ask2(text,yes='OK'){return new Promise(r=>{$('mtext').textContent=text;$('myes').textContent=yes;$('modal').classList.remove('hide');
+  $('myes').onclick=()=>{$('modal').classList.add('hide');r(true)};$('mno').onclick=()=>{$('modal').classList.add('hide');r(false)}})}
+function busy(btn,on,label){if(on){btn.dataset.l=btn.textContent;btn.textContent=label||'…';btn.disabled=true}else{btn.textContent=btn.dataset.l||btn.textContent;btn.disabled=false}}
+
+/* ================= Login ================= */
+let LG={code:'',roster:[],member:null};
+function loginStep(n){['l1','l2','l3'].forEach((s,i)=>$(s).classList.toggle('hide',i!==n-1))}
+async function toLogin(){show('login');loginStep(1);try{$('code').value=localStorage.getItem('ehq-code')||''}catch(e){}}
+$('b1').onclick=async()=>{
+  const code=$('code').value.trim();$('e1').textContent='';
+  if(!code){$('e1').textContent='Gib den Mannschaftscode ein.';return}
+  busy($('b1'),true);
+  try{const r=await API.roster(code);
+    if(!r.length){$('e1').textContent='Diesen Code gibt es nicht. Schau nochmal in die Nachricht deines Trainers.';return}
+    LG={code,roster:r,member:null};try{localStorage.setItem('ehq-code',code)}catch(e){}
+    $('tname').textContent=r[0].team_name;$('nfilter').value='';renderNames();loginStep(2);
+  }catch(e){$('e1').textContent='Keine Verbindung. Versuch es gleich nochmal.'}
+  finally{busy($('b1'),false)}
+};
+$('code').onkeydown=e=>{if(e.key==='Enter')$('b1').click()};
+$('code').oninput=()=>{$('e1').textContent=''};
+function renderNames(){
+  const f=$('nfilter').value.trim().toLowerCase();
+  $('names').innerHTML='';
+  LG.roster.filter(m=>m.display_name.toLowerCase().includes(f)).forEach(m=>{
+    const b=document.createElement('button');b.className='nm';
+    b.innerHTML=`<span>${esc(m.display_name)}</span><small>${m.claimed?'':'erstes Mal'}</small>`;
+    b.onclick=()=>pickName(m);$('names').appendChild(b)});
+}
+$('nfilter').oninput=renderNames;
+$('back1').onclick=()=>loginStep(1);
+$('back2').onclick=()=>loginStep(2);
+function pickName(m){LG.member=m;$('pname').textContent=m.display_name;$('e3').textContent='';
+  $('pwOld').classList.toggle('hide',!m.claimed);$('pwNew').classList.toggle('hide',m.claimed);
+  ['pw','pw1','pw2'].forEach(i=>$(i).value='');$('b3').textContent=m.claimed?'Anmelden':'Passwort festlegen';
+  loginStep(3);setTimeout(()=>$(m.claimed?'pw':'pw1').focus(),50)}
+['pw','pw1','pw2'].forEach(i=>{$(i).oninput=()=>{$('e3').textContent=''};$(i).onkeydown=e=>{if(e.key==='Enter')$('b3').click()}});
+$('b3').onclick=async()=>{
+  const m=LG.member;$('e3').textContent='';
+  if(m.claimed){if(!$('pw').value){$('e3').textContent='Gib dein Passwort ein.';return}}
+  else{const a=$('pw1').value,b=$('pw2').value;
+    if(a.length<6){$('e3').textContent='Mindestens 6 Zeichen.';return}
+    if(a!==b){$('e3').textContent='Die beiden Passwörter sind nicht gleich.';return}}
+  busy($('b3'),true);
+  try{if(m.claimed)await API.signIn(LG.code,m.id,$('pw').value);else await API.signUp(LG.code,m.id,$('pw1').value);
+    await enter();
+  }catch(e){$('e3').textContent=e.message||'Das hat nicht geklappt.'}
+  finally{busy($('b3'),false)}
+};
+async function enter(){
+  ME=await API.me();
+  if(!ME){await API.signOut();toLogin();$('e1').textContent='Dein Zugang ist nicht mehr aktiv. Frag deinen Trainer.';return}
+  await loadAnswers();home();
+}
+$('logout').onclick=async()=>{await API.signOut();ME=null;toLogin()};
+
+/* ================= Fortschritt ================= */
+let full=true;
+const ALL=QS.map((q,i)=>i);
+const qIndex=Object.fromEntries(QS.map((q,i)=>[q.id,i]));
+async function loadAnswers(){answers={};try{(await API.loadProgress()).forEach(p=>{if(p.question_id in qIndex)answers[qIndex[p.question_id]]={ok:p.ok,oi:p.choice}})}catch(e){}}
+async function home(){
+  show('home');
+  $('hello').textContent='Hallo '+ME.display_name.split(' ')[0]+'!';$('hteam').textContent=ME.team_name.toUpperCase();
+  const n=Object.keys(answers).length,right=Object.values(answers).filter(a=>a.ok).length,pct=Math.round(n/QS.length*100);
+  $('hdone').textContent=n?`${n} von ${QS.length} beantwortet · ${right} richtig`:'Noch nicht begonnen';
+  $('hpct').textContent=pct+' %';$('hbar').style.width=pct+'%';
+  $('hstart').textContent=n===0?'Starten':n<QS.length?'Weitermachen':'Ergebnis ansehen';
+  $('hfresh').classList.toggle('hide',n===0);
+  $('htrainer').classList.toggle('hide',ME.role==='player');
+  $('hbest').textContent='';
+  try{const b=await API.best();if(b!=null)$('hbest').textContent=`Bestes Ergebnis: ${b} %`}catch(e){}
+}
+$('hstart').onclick=()=>{const n=Object.keys(answers).length;if(n===QS.length){order=ALL;full=true;result();return}startRun(ALL,true)};
+$('hfresh').onclick=async()=>{if(!await ask2('Kapitel 1 von vorne beginnen? Deine bisherigen Antworten werden gelöscht.','Von vorne'))return;
+  try{await API.resetProgress()}catch(e){}answers={};startRun(ALL,true)};
+
+/* ================= Quiz ================= */
+function doneCount(){return order.filter(i=>answers[i]).length}
+function updDone(){const n=doneCount(),pct=Math.round(n/order.length*100);$('barfill').style.width=pct+'%';$('done').textContent=`${pct} % geschafft`}
+function startRun(list,isFull){full=isFull;order=list;
+  idx=isFull?Math.max(0,order.findIndex(i=>!answers[i])):0;
+  if(!isFull)list.forEach(i=>delete answers[i]);
+  show('quiz');loadQ()}
+async function loadQ(){
+  cur=QS[order[idx]];const tk=++token;const a=answers[order[idx]];
+  $('prog').textContent=`Frage ${idx+1} von ${order.length}`;
+  $('chap').textContent=cur.chap;$('lvl').textContent=cur.lvl;updDone();
+  $('prev').classList.toggle('hide',idx===0);
+  $('opts').innerHTML='';$('fb').innerHTML='';$('next').classList.add('hide');$('replay').classList.add('hide');
+  build(cur);
+  if(a){jump(cur.intro);ask();markAnswer(a.oi);await wait(300);await play(cur.solve,tk);return}
+  $('qtext').textContent='Schau genau hin …';$('qtext').classList.add('muted');
+  await wait(450);
+  if(!await play(cur.intro,tk))return;
+  ask();
+}
+function ask(){
+  $('qtext').textContent=cur.q;$('qtext').classList.remove('muted');
+  shuffled=cur.o.map((t,i)=>i).sort(()=>Math.random()-.5);
+  $('opts').innerHTML='';
+  shuffled.forEach((oi,n)=>{const b=document.createElement('button');b.className='opt';
+    b.innerHTML=`<b>${'ABCD'[n]}</b><span>${cur.o[oi]}</span>`;b.onclick=()=>pick(oi);$('opts').appendChild(b)});
+  $('replay').textContent='Nochmal ansehen';$('replay').classList.remove('hide');$('replay').onclick=replayIntro;
+}
+async function replayIntro(){const tk=++token;build(cur);await wait(300);await play(cur.intro,tk)}
+function markAnswer(oi){
+  const ok=oi===0;
+  [...$('opts').children].forEach((b,n)=>{b.onclick=null;const o=shuffled[n];
+    if(o===0)b.classList.add('ok');else if(o===oi)b.classList.add('bad');else b.classList.add('dim')});
+  $('fb').innerHTML=`<div class="fb ${ok?'ok':'bad'}"><strong>${ok?'Richtig!':'Leider falsch.'}</strong>${cur.ex}</div>`;
+  $('next').textContent=idx<order.length-1?'Weiter':'Zur Auswertung';$('next').classList.remove('hide');
+  $('replay').textContent='Lösung nochmal';$('replay').classList.remove('hide');$('replay').onclick=replaySolve;
+}
+async function pick(oi){
+  const ok=oi===0;answers[order[idx]]={ok,oi};updDone();markAnswer(oi);
+  API.saveAnswer(cur.id,ok,oi).catch(()=>{$('fb').insertAdjacentHTML('beforeend','<div class="err" style="margin-top:8px">Antwort konnte nicht gespeichert werden – prüfe deine Internetverbindung.</div>')});
+  const tk=++token;await play(cur.solve,tk);
+}
+async function replaySolve(){const tk=++token;build(cur);jump(cur.intro);await wait(300);await play(cur.solve,tk)}
+$('next').onclick=()=>{token++;
+  if(idx<order.length-1){idx++;loadQ();return}
+  const open=order.findIndex(i=>!answers[i]);
+  if(open>=0){idx=open;loadQ()}else result(true)};
+$('prev').onclick=()=>{if(idx>0){token++;idx--;loadQ()}};
+$('menu').onclick=()=>{token++;home()};
+
+function result(save){
+  show('result');
+  const ids=order,ok=i=>answers[i]&&answers[i].ok,right=ids.filter(ok).length,pct=Math.round(right/ids.length*100);
+  $('pct').textContent=pct+' %';$('score').textContent=`${right} von ${ids.length} richtig`;
+  $('verdict').textContent=pct>=80?'Bestanden! Du kennst dein Playbook.':pct>=50?'Gute Basis – übe die Fehler nochmal.':'Schau nochmal ins Playbook und probier die Fehler nochmal.';
+  $('reslist').innerHTML=ids.map(i=>`<li><span class="mark" style="background:${ok(i)?'var(--ok)':'var(--bad)'}">${ok(i)?'✓':'✕'}</span><span><span class="muted" style="font-size:13px">${QS[i].chap}</span><br>${QS[i].q}</span></li>`).join('');
+  const wrong=ids.filter(i=>!ok(i));
+  $('retryWrong').classList.toggle('hide',!wrong.length);
+  $('retryWrong').onclick=()=>startRun(wrong,false);
+  if(full&&save){API.saveAttempt(right,ids.length).catch(()=>{})}
+}
+$('toHome').onclick=()=>home();
+
+/* ================= Trainerbereich ================= */
+let TEAMS=[],TEAM=null;
+$('htrainer').onclick=()=>openTrainer();
+$('tback').onclick=()=>home();
+async function openTrainer(){
+  show('trainer');
+  document.body.classList.toggle('adminhide',ME.role!=='admin');
+  $('trole').textContent=ME.role==='admin'?'Admin':'Trainer';
+  TEAMS=await API.teams();
+  if(!TEAM||!TEAMS.find(t=>t.id===TEAM.id))TEAM=TEAMS.find(t=>t.id!==ME.team_id||ME.role!=='admin')||TEAMS[0];
+  renderTeams();await renderTeam();
+}
+function renderTeams(){$('tsel').innerHTML=TEAMS.map(t=>`<option value="${t.id}"${TEAM&&t.id===TEAM.id?' selected':''}>${esc(t.name)}</option>`).join('')}
+$('tsel').onchange=async()=>{TEAM=TEAMS.find(t=>t.id===$('tsel').value);await renderTeam()};
+async function renderTeam(){
+  if(!TEAM){$('tlist').innerHTML='<p class="muted">Noch keine Mannschaft.</p>';return}
+  $('tcode').textContent=TEAM.code;$('tcopymsg').textContent='';
+  $('tlist').innerHTML='<p class="muted">Lädt …</p>';
+  const ms=await API.members(TEAM.id);
+  const players=ms.filter(m=>m.role==='player');
+  $('tcount').textContent=`${players.length} Spieler · ${players.filter(m=>m.claimed).length} angemeldet`;
+  $('tlist').innerHTML=ms.length?'':'<p class="muted" style="margin:10px 0 0">Noch niemand angelegt.</p>';
+  ms.forEach(m=>{
+    const n=m.progress.length,r=m.progress.filter(p=>p.ok).length,pct=Math.round(n/QS.length*100);
+    const canEdit=ME.role==='admin'||m.role==='player';const self=m.id===ME.id;
+    const d=document.createElement('div');d.className='mrow';
+    d.innerHTML=`<div class="who"><b>${esc(m.name)}${m.role!=='player'?` <span class="tag" style="font-size:11px">${m.role==='admin'?'Admin':'Trainer'}</span>`:''}</b>
+      <span>${m.claimed?`${pct} % geschafft · ${r}/${n} richtig${m.best!=null?` · Bestes: ${m.best} %`:''}`:'noch nicht angemeldet'}</span>
+      <div class="minibar"><i style="width:${pct}%"></i></div></div>
+      <div class="acts">${canEdit&&!self&&m.claimed?'<button class="btn small" data-a="reset">Passwort</button>':''}${canEdit&&!self?'<button class="btn small" data-a="del">Entfernen</button>':''}</div>`;
+    d.querySelectorAll('[data-a]').forEach(b=>b.onclick=async()=>{
+      if(b.dataset.a==='reset'){if(!await ask2(`Passwort von ${m.name} zurücksetzen? Beim nächsten Login legt ${m.name} ein neues fest. Der Fortschritt bleibt erhalten.`,'Zurücksetzen'))return;
+        try{await API.resetLogin(m.id)}catch(e){await ask2('Das hat nicht geklappt: '+e.message)}}
+      else{if(!await ask2(`${m.name} entfernen? Der Zugang und der Fortschritt werden gelöscht.`,'Entfernen'))return;
+        try{await API.removeMember(m.id)}catch(e){await ask2('Das hat nicht geklappt: '+e.message)}}
+      renderTeam()});
+    $('tlist').appendChild(d)});
+  renderStats(ms.filter(m=>m.role==='player'));
+}
+function renderStats(ms){
+  const rows=QS.map((q,i)=>{const ps=ms.flatMap(m=>m.progress.filter(p=>p.question_id===q.id));
+    const ok=ps.filter(p=>p.ok).length;return {i,q,n:ps.length,pct:ps.length?Math.round(ok/ps.length*100):null}});
+  if(!rows.some(r=>r.n)){$('tstats').innerHTML='<p class="muted" style="margin:0;font-size:14px">Noch keine Antworten.</p>';return}
+  rows.sort((a,b)=>(a.pct??101)-(b.pct??101));
+  $('tstats').innerHTML=rows.filter(r=>r.n).map(r=>`<div class="srow"><div><span class="muted" style="font-size:12px">Frage ${r.i+1} · ${esc(r.q.chap)}</span><br>${esc(r.q.q)}${r.n?`<div class="sbar"><i style="width:${r.pct}%"></i></div>`:''}</div><div style="text-align:right;font-weight:600">${r.n?r.pct+' %':'–'}<br><span class="muted" style="font-size:12px;font-weight:400">${r.n} Antw.</span></div></div>`).join('');
+}
+$('tcopy').onclick=async()=>{const txt=`Eishockey-Quiz 🏒\n${location.href.split('#')[0]}\nMannschaftscode: ${TEAM.code}\nDann deinen Namen antippen und beim ersten Mal ein eigenes Passwort festlegen.`;
+  try{await navigator.clipboard.writeText(txt);$('tcopymsg').textContent='Nachricht mit Link und Code kopiert – einfach in die WhatsApp-Gruppe einfügen.'}
+  catch(e){$('tcopymsg').textContent='Kopieren nicht möglich. Code: '+TEAM.code}};
+$('tnewcode').onclick=async()=>{if(!await ask2(`Neuen Code für ${TEAM.name} erzeugen? Der alte Code funktioniert danach nicht mehr für neue Anmeldungen.`,'Neuer Code'))return;
+  try{TEAM.code=await API.newCode(TEAM);$('tcode').textContent=TEAM.code}catch(e){await ask2('Das hat nicht geklappt: '+e.message)}};
+$('tadd').onclick=async()=>{
+  const names=[...new Set($('tnames').value.split('\n').map(s=>s.trim().replace(/\s+/g,' ')).filter(Boolean))];$('tadderr').textContent='';
+  if(!names.length){$('tadderr').textContent='Trag mindestens einen Namen ein.';return}
+  if(names.some(n=>n.length>40)){$('tadderr').textContent='Ein Name ist zu lang (max. 40 Zeichen).';return}
+  busy($('tadd'),true);
+  try{await API.addMembers(TEAM.id,names,$('trolesel').value);$('tnames').value='';await renderTeam()}
+  catch(e){$('tadderr').textContent='Das hat nicht geklappt: '+e.message}
+  finally{busy($('tadd'),false)}};
+$('tnames').oninput=()=>{$('tadderr').textContent=''};
+$('tcreate').onclick=async()=>{const n=$('tnewteam').value.trim();$('tcreateerr').textContent='';
+  if(!n){$('tcreateerr').textContent='Gib einen Namen ein.';return}
+  try{const t=await API.createTeam(n);$('tnewteam').value='';TEAMS=await API.teams();TEAM=TEAMS.find(x=>x.id===t.id)||t;renderTeams();await renderTeam()}
+  catch(e){$('tcreateerr').textContent='Das hat nicht geklappt: '+e.message}};
+
+/* ================= Start ================= */
+(async()=>{
+  try{if(await API.hasSession()){await enter();return}}catch(e){}
+  toLogin();
+})();
+
+</script>
+</body>
+</html>
