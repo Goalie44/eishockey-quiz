@@ -106,12 +106,40 @@ a.btn{text-decoration:none}
 .eye{position:absolute;right:5px;top:5px;width:38px;height:38px;border:0;background:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;border-radius:8px;padding:0}
 .eye:hover{color:var(--ink)}
 .eye svg{width:22px;height:22px}
+.stripe.s1{height:10px;background:#14181f}.stripe.s2{height:8px;background:#FFD100}
+body.wide .stripe.s1{height:4px}body.wide .stripe.s2{height:3px}
+body.wide .wrap{padding-top:8px}
+.qhead{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.qhead #menu{padding:6px 10px;font-size:14px}
+.qinfo{flex:1;font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qinfo b{color:var(--ink);font-weight:600}
+.qhead .tag{font-size:12px;padding:2px 8px}
+.qbar{height:4px;margin-bottom:6px}
+.qfoot{margin-top:10px;justify-content:space-between}
+.rinkbox{padding:4px}
+.rinkbox svg{max-height:41vh;max-height:41dvh;width:auto;max-width:100%;margin:0 auto}
+.q{font-size:17px;margin:8px 0 8px;line-height:1.3}
+.opts{gap:7px}
+.opt{padding:9px 12px;font-size:15.5px;line-height:1.3;align-items:center}
+.opt b{width:24px;height:24px;font-size:13px}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:9;display:flex;justify-content:center;padding:0 10px calc(10px + env(safe-area-inset-bottom))}
+.sheetbox{position:relative;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 -8px 28px rgba(20,24,31,.18);padding:16px 16px 14px;max-width:560px;width:100%;max-height:62vh;overflow:auto;animation:sheetup .25s ease-out}
+.sheetbox .fb{margin:0;padding:0;background:none;padding-right:30px}
+.sheetbox .fb strong{font-size:18px;margin-bottom:4px}
+.sheetbox .fb.ok strong{color:var(--ok)}.sheetbox .fb.bad strong{color:var(--bad)}
+.sx{position:absolute;top:8px;right:8px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:16px;cursor:pointer;color:var(--ink)}
+@keyframes sheetup{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+@media (max-width:899px){.qhead .tag.lvl{display:none}}
+@media (min-width:900px) and (orientation:landscape){body.wide .rinkbox svg{max-height:calc(100vh - 120px)}}
+body.wide .demo{display:none}
+@media (max-height:740px){.rinkbox svg{max-height:35vh;max-height:35dvh}.q{font-size:16px;margin:6px 0}.opt{padding:7px 11px;font-size:15px}.qfoot{margin-top:8px}}
+.qfoot .btn{padding:8px 11px}
 
 body{padding-bottom:env(safe-area-inset-bottom)}
 </style>
 </head>
 <body>
-<div style="height:10px;background:#14181f"></div><div style="height:8px;background:#FFD100"></div>
+<div class="stripe s1"></div><div class="stripe s2"></div>
 <div id="demo" class="demo hide">Demo-Modus – ohne Datenbank, nur zum Ausprobieren. Code: <b>TEST-1234</b> oder <b>TRAINER-DEMO</b></div>
 <div class="wrap" id="wrap">
 
@@ -161,20 +189,19 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 </section>
 
 <section id="quiz" class="hide">
-  <div class="row" style="justify-content:space-between;margin-bottom:10px"><button class="btn small" id="menu">☰ Menü</button><span id="done" style="font-size:14px;font-weight:600"></span></div>
+  <div class="qhead"><button class="btn small" id="menu" aria-label="Menü">☰ Menü</button><span class="qinfo"><b id="prog">Frage 1 von 13</b> · <span id="done"></span></span><span class="tag" id="chap"></span><span class="tag lvl" id="lvl"></span></div>
+  <div class="bar qbar"><i id="barfill" style="width:0"></i></div>
   <div class="qgrid">
     <div class="qleft">
-      <div class="top"><span id="prog">Frage 1 von 13</span><span class="row" style="gap:6px"><span class="tag" id="chap"></span><span class="tag lvl" id="lvl"></span></span></div>
-      <div class="bar"><i id="barfill" style="width:0"></i></div>
       <div class="rinkbox"><div class="banner" id="banner"></div><svg id="rink" viewBox="0 0 400 420"></svg></div>
     </div>
     <div class="qright">
       <div class="q" id="qtext"></div>
       <div class="opts" id="opts"></div>
       <div id="fb"></div>
-      <div class="row" style="margin-top:14px;justify-content:space-between">
+      <div class="row qfoot">
         <button class="btn small" id="prev">← Zurück</button>
-        <span class="row"><button class="btn small" id="replay">Nochmal ansehen</button><button class="btn primary hide" id="next">Weiter</button></span>
+        <span class="row" style="gap:6px"><button class="btn small hide" id="exbtn">Erklärung</button><button class="btn small" id="replay">Nochmal ansehen</button><button class="btn primary hide" id="next">Weiter</button></span>
       </div>
     </div>
   </div>
@@ -242,6 +269,7 @@ body{padding-bottom:env(safe-area-inset-bottom)}
   </div>
 </section>
 
+<div id="sheet" class="sheet hide"><div class="sheetbox" role="dialog" aria-modal="false"><button class="sx" id="sx" aria-label="Erklärung schließen">✕</button><div id="sheetfb"></div><div class="row" style="justify-content:space-between;margin-top:12px"><button class="btn small" id="sreplay">Lösung nochmal</button><button class="btn primary" id="snext">Weiter</button></div></div></div>
 <div id="modal" class="modal hide"><div class="card mbox"><div id="mtext" style="margin-bottom:14px"></div><div class="row" style="justify-content:flex-end"><button class="btn small" id="mno">Abbrechen</button><button class="btn primary" id="myes">OK</button></div></div></div>
 </div>
 
@@ -795,17 +823,17 @@ async function home(){
 
 /* ================= Quiz ================= */
 function doneCount(){return order.filter(i=>answers[i]).length}
-function updDone(){const n=doneCount(),pct=Math.round(n/order.length*100);$('barfill').style.width=pct+'%';$('done').textContent=`${pct} % geschafft`}
+function updDone(){const n=doneCount(),pct=Math.round(n/order.length*100);$('barfill').style.width=pct+'%';$('done').textContent=`${pct} % geschafft`.replace(' geschafft','')}
 function startRun(list,isFull){full=isFull;order=list;
   idx=isFull?Math.max(0,order.findIndex(i=>!answers[i])):0;
   if(!isFull)list.forEach(i=>delete answers[i]);
   show('quiz');loadQ()}
 async function loadQ(){
   cur=QS[order[idx]];const tk=++token;const a=answers[order[idx]];
-  $('prog').textContent=`Frage ${idx+1} von ${order.length}`;
+  $('prog').textContent=`Frage ${idx+1}/${order.length}`;
   $('chap').textContent=cur.chap;$('lvl').textContent=cur.lvl;updDone();
   $('prev').classList.toggle('hide',idx===0);
-  $('opts').innerHTML='';$('fb').innerHTML='';$('next').classList.add('hide');$('replay').classList.add('hide');
+  $('opts').innerHTML='';$('fb').innerHTML='';$('next').classList.add('hide');$('replay').classList.add('hide');$('exbtn').classList.add('hide');closeSheet();
   build(cur);
   if(a){jump(cur.intro);ask();markAnswer(a.oi);await wait(300);await play(cur.solve,tk);return}
   $('qtext').textContent='Schau genau hin …';$('qtext').classList.add('muted');
@@ -826,22 +854,29 @@ function markAnswer(oi){
   const ok=oi===0;
   [...$('opts').children].forEach((b,n)=>{b.onclick=null;const o=shuffled[n];
     if(o===0)b.classList.add('ok');else if(o===oi)b.classList.add('bad');else b.classList.add('dim')});
-  $('fb').innerHTML=`<div class="fb ${ok?'ok':'bad'}"><strong>${ok?'Richtig!':'Leider falsch.'}</strong>${cur.ex}</div>`;
-  $('next').textContent=idx<order.length-1?'Weiter':'Zur Auswertung';$('next').classList.remove('hide');
-  $('replay').textContent='Lösung nochmal';$('replay').classList.remove('hide');$('replay').onclick=replaySolve;
+  $('fb').innerHTML='';
+  $('sheetfb').innerHTML=`<div class="fb ${ok?'ok':'bad'}"><strong>${ok?'Richtig!':'Leider falsch.'}</strong>${cur.ex}</div>`;
+  const nt=idx<order.length-1?'Weiter':'Zur Auswertung';$('next').textContent=nt;$('snext').textContent=nt;$('next').classList.remove('hide');$('exbtn').classList.remove('hide');
+  $('replay').textContent='↻ Lösung';$('replay').classList.remove('hide');$('replay').onclick=replaySolve;
 }
 async function pick(oi){
   const ok=oi===0;answers[order[idx]]={ok,oi};updDone();markAnswer(oi);
-  API.saveAnswer(cur.id,ok,oi).catch(()=>{$('fb').insertAdjacentHTML('beforeend','<div class="err" style="margin-top:8px">Antwort konnte nicht gespeichert werden – prüfe deine Internetverbindung.</div>')});
-  const tk=++token;await play(cur.solve,tk);
+  API.saveAnswer(cur.id,ok,oi).catch(()=>{$('sheetfb').insertAdjacentHTML('beforeend','<div class="err" style="margin-top:8px">Antwort konnte nicht gespeichert werden – prüfe deine Internetverbindung.</div>')});
+  const tk=++token;clearTimeout(sheetTimer);sheetTimer=setTimeout(()=>{if(tk===token||cur===QS[order[idx]])openSheet()},4500);await play(cur.solve,tk);
 }
+let sheetTimer=null;
+function openSheet(){$('sheet').classList.remove('hide')}
+function closeSheet(){clearTimeout(sheetTimer);$('sheet').classList.add('hide')}
+$('sx').onclick=closeSheet;$('exbtn').onclick=openSheet;
+$('sreplay').onclick=()=>{closeSheet();replaySolve()};
+$('snext').onclick=()=>$('next').click();
 async function replaySolve(){const tk=++token;build(cur);jump(cur.intro);await wait(300);await play(cur.solve,tk)}
-$('next').onclick=()=>{token++;
+$('next').onclick=()=>{token++;closeSheet();
   if(idx<order.length-1){idx++;loadQ();return}
   const open=order.findIndex(i=>!answers[i]);
   if(open>=0){idx=open;loadQ()}else result(true)};
-$('prev').onclick=()=>{if(idx>0){token++;idx--;loadQ()}};
-$('menu').onclick=()=>{token++;home()};
+$('prev').onclick=()=>{if(idx>0){token++;closeSheet();idx--;loadQ()}};
+$('menu').onclick=()=>{token++;closeSheet();home()};
 
 function result(save){
   show('result');

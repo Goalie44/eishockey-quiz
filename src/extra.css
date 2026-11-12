@@ -43,3 +43,31 @@ a.btn{text-decoration:none}
 .eye{position:absolute;right:5px;top:5px;width:38px;height:38px;border:0;background:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;border-radius:8px;padding:0}
 .eye:hover{color:var(--ink)}
 .eye svg{width:22px;height:22px}
+.stripe.s1{height:10px;background:#14181f}.stripe.s2{height:8px;background:#FFD100}
+body.wide .stripe.s1{height:4px}body.wide .stripe.s2{height:3px}
+body.wide .wrap{padding-top:8px}
+.qhead{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.qhead #menu{padding:6px 10px;font-size:14px}
+.qinfo{flex:1;font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qinfo b{color:var(--ink);font-weight:600}
+.qhead .tag{font-size:12px;padding:2px 8px}
+.qbar{height:4px;margin-bottom:6px}
+.qfoot{margin-top:10px;justify-content:space-between}
+.rinkbox{padding:4px}
+.rinkbox svg{max-height:41vh;max-height:41dvh;width:auto;max-width:100%;margin:0 auto}
+.q{font-size:17px;margin:8px 0 8px;line-height:1.3}
+.opts{gap:7px}
+.opt{padding:9px 12px;font-size:15.5px;line-height:1.3;align-items:center}
+.opt b{width:24px;height:24px;font-size:13px}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:9;display:flex;justify-content:center;padding:0 10px calc(10px + env(safe-area-inset-bottom))}
+.sheetbox{position:relative;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 -8px 28px rgba(20,24,31,.18);padding:16px 16px 14px;max-width:560px;width:100%;max-height:62vh;overflow:auto;animation:sheetup .25s ease-out}
+.sheetbox .fb{margin:0;padding:0;background:none;padding-right:30px}
+.sheetbox .fb strong{font-size:18px;margin-bottom:4px}
+.sheetbox .fb.ok strong{color:var(--ok)}.sheetbox .fb.bad strong{color:var(--bad)}
+.sx{position:absolute;top:8px;right:8px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:16px;cursor:pointer;color:var(--ink)}
+@keyframes sheetup{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+@media (max-width:899px){.qhead .tag.lvl{display:none}}
+@media (min-width:900px) and (orientation:landscape){body.wide .rinkbox svg{max-height:calc(100vh - 120px)}}
+body.wide .demo{display:none}
+@media (max-height:740px){.rinkbox svg{max-height:35vh;max-height:35dvh}.q{font-size:16px;margin:6px 0}.opt{padding:7px 11px;font-size:15px}.qfoot{margin-top:8px}}
+.qfoot .btn{padding:8px 11px}

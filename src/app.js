@@ -184,17 +184,17 @@ async function home(){
 
 /* ================= Quiz ================= */
 function doneCount(){return order.filter(i=>answers[i]).length}
-function updDone(){const n=doneCount(),pct=Math.round(n/order.length*100);$('barfill').style.width=pct+'%';$('done').textContent=`${pct} % geschafft`}
+function updDone(){const n=doneCount(),pct=Math.round(n/order.length*100);$('barfill').style.width=pct+'%';$('done').textContent=`${pct} % geschafft`.replace(' geschafft','')}
 function startRun(list,isFull){full=isFull;order=list;
   idx=isFull?Math.max(0,order.findIndex(i=>!answers[i])):0;
   if(!isFull)list.forEach(i=>delete answers[i]);
   show('quiz');loadQ()}
 async function loadQ(){
   cur=QS[order[idx]];const tk=++token;const a=answers[order[idx]];
-  $('prog').textContent=`Frage ${idx+1} von ${order.length}`;
+  $('prog').textContent=`Frage ${idx+1}/${order.length}`;
   $('chap').textContent=cur.chap;$('lvl').textContent=cur.lvl;updDone();
   $('prev').classList.toggle('hide',idx===0);
-  $('opts').innerHTML='';$('fb').innerHTML='';$('next').classList.add('hide');$('replay').classList.add('hide');
+  $('opts').innerHTML='';$('fb').innerHTML='';$('next').classList.add('hide');$('replay').classList.add('hide');$('exbtn').classList.add('hide');closeSheet();
   build(cur);
   if(a){jump(cur.intro);ask();markAnswer(a.oi);await wait(300);await play(cur.solve,tk);return}
   $('qtext').textContent='Schau genau hin …';$('qtext').classList.add('muted');
@@ -215,22 +215,29 @@ function markAnswer(oi){
   const ok=oi===0;
   [...$('opts').children].forEach((b,n)=>{b.onclick=null;const o=shuffled[n];
     if(o===0)b.classList.add('ok');else if(o===oi)b.classList.add('bad');else b.classList.add('dim')});
-  $('fb').innerHTML=`<div class="fb ${ok?'ok':'bad'}"><strong>${ok?'Richtig!':'Leider falsch.'}</strong>${cur.ex}</div>`;
-  $('next').textContent=idx<order.length-1?'Weiter':'Zur Auswertung';$('next').classList.remove('hide');
-  $('replay').textContent='Lösung nochmal';$('replay').classList.remove('hide');$('replay').onclick=replaySolve;
+  $('fb').innerHTML='';
+  $('sheetfb').innerHTML=`<div class="fb ${ok?'ok':'bad'}"><strong>${ok?'Richtig!':'Leider falsch.'}</strong>${cur.ex}</div>`;
+  const nt=idx<order.length-1?'Weiter':'Zur Auswertung';$('next').textContent=nt;$('snext').textContent=nt;$('next').classList.remove('hide');$('exbtn').classList.remove('hide');
+  $('replay').textContent='↻ Lösung';$('replay').classList.remove('hide');$('replay').onclick=replaySolve;
 }
 async function pick(oi){
   const ok=oi===0;answers[order[idx]]={ok,oi};updDone();markAnswer(oi);
-  API.saveAnswer(cur.id,ok,oi).catch(()=>{$('fb').insertAdjacentHTML('beforeend','<div class="err" style="margin-top:8px">Antwort konnte nicht gespeichert werden – prüfe deine Internetverbindung.</div>')});
-  const tk=++token;await play(cur.solve,tk);
+  API.saveAnswer(cur.id,ok,oi).catch(()=>{$('sheetfb').insertAdjacentHTML('beforeend','<div class="err" style="margin-top:8px">Antwort konnte nicht gespeichert werden – prüfe deine Internetverbindung.</div>')});
+  const tk=++token;clearTimeout(sheetTimer);sheetTimer=setTimeout(()=>{if(tk===token||cur===QS[order[idx]])openSheet()},4500);await play(cur.solve,tk);
 }
+let sheetTimer=null;
+function openSheet(){$('sheet').classList.remove('hide')}
+function closeSheet(){clearTimeout(sheetTimer);$('sheet').classList.add('hide')}
+$('sx').onclick=closeSheet;$('exbtn').onclick=openSheet;
+$('sreplay').onclick=()=>{closeSheet();replaySolve()};
+$('snext').onclick=()=>$('next').click();
 async function replaySolve(){const tk=++token;build(cur);jump(cur.intro);await wait(300);await play(cur.solve,tk)}
-$('next').onclick=()=>{token++;
+$('next').onclick=()=>{token++;closeSheet();
   if(idx<order.length-1){idx++;loadQ();return}
   const open=order.findIndex(i=>!answers[i]);
   if(open>=0){idx=open;loadQ()}else result(true)};
-$('prev').onclick=()=>{if(idx>0){token++;idx--;loadQ()}};
-$('menu').onclick=()=>{token++;home()};
+$('prev').onclick=()=>{if(idx>0){token++;closeSheet();idx--;loadQ()}};
+$('menu').onclick=()=>{token++;closeSheet();home()};
 
 function result(save){
   show('result');
