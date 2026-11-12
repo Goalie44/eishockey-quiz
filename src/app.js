@@ -223,7 +223,7 @@ function markAnswer(oi){
 async function pick(oi){
   const ok=oi===0;answers[order[idx]]={ok,oi};updDone();markAnswer(oi);
   API.saveAnswer(cur.id,ok,oi).catch(()=>{$('sheetfb').insertAdjacentHTML('beforeend','<div class="err" style="margin-top:8px">Antwort konnte nicht gespeichert werden – prüfe deine Internetverbindung.</div>')});
-  const tk=++token;clearTimeout(sheetTimer);sheetTimer=setTimeout(()=>{if(tk===token||cur===QS[order[idx]])openSheet()},4500);await play(cur.solve,tk);
+  const tk=++token;clearTimeout(sheetTimer);sheetTimer=setTimeout(()=>{if(tk===token||cur===QS[order[idx]])openSheet()},2000);await play(cur.solve,tk);
 }
 let sheetTimer=null;
 function openSheet(){$('sheet').classList.remove('hide')}
