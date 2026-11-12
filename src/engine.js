@@ -14,6 +14,7 @@ function mkEnt(k){
   g.innerHTML=opp
    ?`<circle r="12" fill="#e0312b" stroke="#fff" stroke-width="1.5"/><text y="4" text-anchor="middle" font-size="10.5" font-weight="600" fill="#fff" font-family="Barlow">${lab}</text>`
    :(hasStick(k)?STK:'')+`<circle r="14" fill="#14181f" stroke="#FFD100" stroke-width="2"/><text y="4" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="Barlow">${lab}</text>`;
+  if(k==='T'||k==='gT')g.innerHTML='<g transform="scale(0.6)">'+g.innerHTML+'</g>';
   return g;
 }
 function setPos(k,p){pos[k]=p;els[k].setAttribute('transform',`translate(${p[0]} ${p[1]})`)}
