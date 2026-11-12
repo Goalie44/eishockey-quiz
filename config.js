@@ -1,7 +1,6 @@
-// Zugangsdaten zur Datenbank (Supabase → Project Settings → API).
-// Beide Werte sind öffentlich und dürfen hier stehen.
-// Solange hier nichts eingetragen ist, läuft die Seite im Demo-Modus.
+// Zugangsdaten zur Datenbank (Supabase).
+// Beide Werte sind öffentlich (publishable) und dürfen hier stehen.
 window.QUIZ_CONFIG = {
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: ""
+  SUPABASE_URL: "https://chiabqngyingjsngtwtg.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_Ps4oxIMMVTugqVRl0efA5Q_bcMhR5BT"
 };
