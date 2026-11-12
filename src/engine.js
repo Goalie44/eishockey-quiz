@@ -24,14 +24,23 @@ function build(q){
   pos={};els={};ang={};curA={};stickOn=(q.rink==='zone'||q.rink==='big')&&!q.noSticks;
   const keys=Object.keys(q.setup).sort((a,b)=>(a==='P')-(b==='P')||(b[0]==='g')-(a[0]==='g'));
   keys.forEach(k=>{els[k]=mkEnt(k);$('ents').appendChild(els[k]);setPos(k,q.setup[k]);if(q.setup[k][2]!=null)ang[k]=q.setup[k][2]});
+  if(stickOn&&pos.P){const t={P:pos.P.slice()};snapPuck(t);setPos('P',t.P)}
   drawSticks();
   hl(null);banner('');
 }
 function hl(h){const g=$('hl');if(!g)return;g.innerHTML=!h?'':h.areas?h.areas.map(a=>`<path d="${a.d}" fill="${a.c}" fill-opacity="0.17" stroke="${a.c}" stroke-width="2.5" stroke-dasharray="${a.dash||'7 5'}"/>`+(a.t?`<text x="${a.x}" y="${a.y}" text-anchor="middle" font-size="13" font-weight="700" fill="${a.c}" font-family="Barlow">${a.t}</text>`:'')).join(''):h.d?`<path class="${h.line?'hlline':'hlarea'}" d="${h.d}"/>`:`<circle class="hlring" cx="${h[0]}" cy="${h[1]}" r="${h[2]}"/>`}
 function banner(t){const b=$('banner');if(t){b.textContent=t;b.classList.add('on')}else b.classList.remove('on')}
+function blade(c,dir){const d=Math.hypot(dir[0],dir[1])||1;return [c[0]+dir[0]/d*31,c[1]+dir[1]/d*31]}
+function snapPuck(tg){if(!stickOn||!tg.P)return;let best=null,bd=18;
+  for(const k in els){if(!hasStick(k))continue;const c=tg[k]||pos[k];const d=Math.hypot(tg.P[0]-c[0],tg.P[1]-c[1]);if(d<bd){bd=d;best=k}}
+  if(best){const c=tg[best]||pos[best];tg.P=blade(c,[tg.P[0]-c[0],tg.P[1]-c[1]])}}
 function targets(s){
   const tg={};for(const k in s.m){if(k!=='P'||typeof s.m.P!=='string')tg[k]=s.m[k]}
-  if(typeof s.m.P==='string'){const b=tg[s.m.P]||pos[s.m.P];tg.P=[b[0]+9,b[1]-9]}
+  if(typeof s.m.P==='string'){const k=s.m.P,c=tg[k]||pos[k],cur=pos[k];
+    if(hasStick(k)){const carry=Math.hypot(pos.P[0]-cur[0],pos.P[1]-cur[1])<42;
+      tg.P=carry?blade(c,[pos.P[0]-cur[0],pos.P[1]-cur[1]]):blade(c,[pos.P[0]-c[0],pos.P[1]-c[1]])}
+    else tg.P=[c[0]+9,c[1]-9]}
+  else snapPuck(tg);
   return tg;
 }
 const wait=ms=>new Promise(r=>setTimeout(r,ms));

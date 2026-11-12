@@ -1,17 +1,7 @@
 RINK.big={vb:'0 0 400 540',svg:`
-<path d="M5 5H395V450A80 80 0 0 1 315 530H85A80 80 0 0 1 5 450Z" fill="#f3f8fb" stroke="#1d2733" stroke-width="3"/>
-<line x1="5" y1="12" x2="395" y2="12" stroke="#d6453d" stroke-width="5"/>
-<circle cx="110" cy="95" r="4" fill="#d6453d"/><circle cx="290" cy="95" r="4" fill="#d6453d"/>
-<rect x="5" y="154" width="390" height="12" fill="#2f6fd6"/>
-<line x1="8" y1="470" x2="392" y2="470" stroke="#d6453d" stroke-width="2"/>
-<path d="M172 470A28 28 0 0 1 228 470Z" fill="#bfe0f7" stroke="#d6453d" stroke-width="1.5"/>
-<rect x="186" y="470" width="28" height="14" rx="3" fill="none" stroke="#1d2733" stroke-width="2.5"/>
-<circle cx="110" cy="380" r="48" fill="none" stroke="#d6453d" stroke-width="2"/>
-<circle cx="290" cy="380" r="48" fill="none" stroke="#d6453d" stroke-width="2"/>
-<circle cx="110" cy="380" r="4" fill="#d6453d"/><circle cx="290" cy="380" r="4" fill="#d6453d"/>
-<g stroke="#d6453d" stroke-width="2"><line x1="50" y1="372" x2="62" y2="372"/><line x1="50" y1="388" x2="62" y2="388"/><line x1="158" y1="372" x2="170" y2="372"/><line x1="158" y1="388" x2="170" y2="388"/><line x1="230" y1="372" x2="242" y2="372"/><line x1="230" y1="388" x2="242" y2="388"/><line x1="338" y1="372" x2="350" y2="372"/><line x1="338" y1="388" x2="350" y2="388"/></g>
-<text x="200" y="40" text-anchor="middle" font-size="12" fill="#8a94a2" font-family="Barlow">neutrale Zone</text>
-<text x="200" y="520" text-anchor="middle" font-size="12" fill="#8a94a2" font-family="Barlow">gegnerisches Tor</text>`};
+<path d="M5 5H395V450A80 80 0 0 1 315 530H85A80 80 0 0 1 5 450Z" fill="#ffffff" stroke="#333" stroke-width="3"/>
+<circle cx="200" cy="12" r="40" fill="none" stroke="#2559a7" stroke-width="1.6"/><line x1="5" y1="12" x2="395" y2="12" stroke="#e0393e" stroke-width="6"/><line x1="5" y1="12" x2="395" y2="12" stroke="#fff" stroke-width="1.4" stroke-dasharray="5 9"/><circle cx="110" cy="128" r="4.5" fill="#e0393e"/><circle cx="290" cy="128" r="4.5" fill="#e0393e"/><line x1="5" y1="160" x2="395" y2="160" stroke="#2559a7" stroke-width="6"/>
+<path d="M180 470V458A20 13 0 0 1 220 458V470Z" fill="#b3d1f0" stroke="#e0393e" stroke-width="1.4"/><line x1="8" y1="470" x2="392" y2="470" stroke="#e0393e" stroke-width="2"/><line x1="170" y1="470" x2="150" y2="530" stroke="#e0393e" stroke-width="1.5"/><line x1="230" y1="470" x2="250" y2="530" stroke="#e0393e" stroke-width="1.5"/><g><line x1="191" y1="472" x2="191" y2="483" stroke="#d9a3a5" stroke-width="0.8"/><line x1="195" y1="472" x2="195" y2="483" stroke="#d9a3a5" stroke-width="0.8"/><line x1="199" y1="472" x2="199" y2="483" stroke="#d9a3a5" stroke-width="0.8"/><line x1="203" y1="472" x2="203" y2="483" stroke="#d9a3a5" stroke-width="0.8"/><line x1="207" y1="472" x2="207" y2="483" stroke="#d9a3a5" stroke-width="0.8"/><line x1="211" y1="472" x2="211" y2="483" stroke="#d9a3a5" stroke-width="0.8"/><line x1="189" y1="475" x2="211" y2="475" stroke="#d9a3a5" stroke-width="0.8"/><line x1="189" y1="479" x2="211" y2="479" stroke="#d9a3a5" stroke-width="0.8"/><path d="M188 470V479Q188 485 194 485H206Q212 485 212 479V470" fill="none" stroke="#e0393e" stroke-width="2.6" stroke-linejoin="round"/></g><circle cx="110" cy="380" r="48" fill="none" stroke="#e0393e" stroke-width="1.8"/><circle cx="110" cy="380" r="4.5" fill="#e0393e"/><path d="M104 364V375H91" fill="none" stroke="#e0393e" stroke-width="1.6"/><path d="M104 396V385H91" fill="none" stroke="#e0393e" stroke-width="1.6"/><path d="M116 364V375H129" fill="none" stroke="#e0393e" stroke-width="1.6"/><path d="M116 396V385H129" fill="none" stroke="#e0393e" stroke-width="1.6"/><line x1="62" y1="376" x2="53" y2="376" stroke="#e0393e" stroke-width="1.6"/><line x1="62" y1="384" x2="53" y2="384" stroke="#e0393e" stroke-width="1.6"/><line x1="158" y1="376" x2="167" y2="376" stroke="#e0393e" stroke-width="1.6"/><line x1="158" y1="384" x2="167" y2="384" stroke="#e0393e" stroke-width="1.6"/><circle cx="290" cy="380" r="48" fill="none" stroke="#e0393e" stroke-width="1.8"/><circle cx="290" cy="380" r="4.5" fill="#e0393e"/><path d="M284 364V375H271" fill="none" stroke="#e0393e" stroke-width="1.6"/><path d="M284 396V385H271" fill="none" stroke="#e0393e" stroke-width="1.6"/><path d="M296 364V375H309" fill="none" stroke="#e0393e" stroke-width="1.6"/><path d="M296 396V385H309" fill="none" stroke="#e0393e" stroke-width="1.6"/><line x1="242" y1="376" x2="233" y2="376" stroke="#e0393e" stroke-width="1.6"/><line x1="242" y1="384" x2="233" y2="384" stroke="#e0393e" stroke-width="1.6"/><line x1="338" y1="376" x2="347" y2="376" stroke="#e0393e" stroke-width="1.6"/><line x1="338" y1="384" x2="347" y2="384" stroke="#e0393e" stroke-width="1.6"/><text x="200" y="520" text-anchor="middle" font-size="12" fill="#8a94a2" font-family="Barlow">gegnerisches Tor</text><text x="200" y="44" text-anchor="middle" font-size="12" fill="#8a94a2" font-family="Barlow">neutrale Zone</text>`};
 
 const HAUS_D='M186 350 L110 262 L110 212 L290 212 L290 262 L214 350 Z';
 const HAUS={areas:[{d:HAUS_D,c:'#f08c00',t:'Haus / Slot',x:200,y:240},{d:'M110 262 L110 350 L186 350 Z M290 262 L290 350 L214 350 Z',c:'#2f6fd6'}]};
@@ -19,9 +9,9 @@ const HASH={d:'M328 260a16 16 0 1 0 32 0a16 16 0 1 0 -32 0 M220 260a16 16 0 1 0 
 const CORNERS={d:'M308 372a42 42 0 1 0 84 0a42 42 0 1 0 -84 0 M8 372a42 42 0 1 0 84 0a42 42 0 1 0 -84 0'};
 const BOXZONES={areas:[
   {d:'M231 281H395V330A80 80 0 0 1 315 410H231Z',c:'#1D9E75',t:'D1',x:250,y:400},
-  {d:'M236 284H378V362H236Z',c:'#14181f',t:'F1',x:250,y:298},
+  {d:'M236 284H378V362H236Z',c:'#7F3FBF',t:'F1',x:250,y:298},
   {d:'M235 50H392V281H235Z',c:'#2f6fd6',t:'F2',x:378,y:68},
-  {d:'M158 193H234V292H158Z',c:'#14181f',dash:'3 4',t:'F3',x:172,y:208},
+  {d:'M158 193H234V292H158Z',c:'#D4537E',t:'F3',x:172,y:208},
   {d:'M156 277H234V350H156Z',c:'#f08c00',t:'D2',x:170,y:344}]};
 const TRAPZONE={areas:[{d:'M205 8H395V148H205Z',c:'#2f6fd6',t:'Zone F2',x:300,y:28}]};
 const OZ='gegnerisches Tor';
