@@ -23,14 +23,14 @@
     <div class="row" style="justify-content:space-between;margin-bottom:8px"><strong id="pname"></strong><button class="btn small" id="back2">Anderer Name</button></div>
     <div id="pwOld">
       <label class="lbl" for="pw">Passwort</label>
-      <input id="pw" class="inp" type="password" autocomplete="current-password">
+      <div class="pwwrap"><input id="pw" class="inp" type="password" autocomplete="current-password"><button type="button" class="eye" aria-label="Passwort anzeigen"></button></div>
     </div>
     <div id="pwNew" class="hide">
       <p class="muted" style="margin:0 0 10px;font-size:15px">Du meldest dich zum ersten Mal an. Lege dein eigenes Passwort fest (mindestens 6 Zeichen) und merke es dir gut.</p>
       <label class="lbl" for="pw1">Neues Passwort</label>
-      <input id="pw1" class="inp" type="password" autocomplete="new-password">
+      <div class="pwwrap"><input id="pw1" class="inp" type="password" autocomplete="new-password"><button type="button" class="eye" aria-label="Passwort anzeigen"></button></div>
       <label class="lbl" for="pw2">Passwort wiederholen</label>
-      <input id="pw2" class="inp" type="password" autocomplete="new-password">
+      <div class="pwwrap"><input id="pw2" class="inp" type="password" autocomplete="new-password"><button type="button" class="eye" aria-label="Passwort anzeigen"></button></div>
     </div>
     <div class="err" id="e3"></div>
     <button class="btn yel full" id="b3">Anmelden</button>

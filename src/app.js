@@ -99,6 +99,10 @@ function ask2(text,yes='OK'){return new Promise(r=>{$('mtext').textContent=text;
 function busy(btn,on,label){if(on){btn.dataset.l=btn.textContent;btn.textContent=label||'…';btn.disabled=true}else{btn.textContent=btn.dataset.l||btn.textContent;btn.disabled=false}}
 
 /* ================= Login ================= */
+const EYE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7c1.7 0 3.2-.4 4.5-1.1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+function setEye(b,show){const i=b.previousElementSibling;i.type=show?'text':'password';b.innerHTML=show?EYE_OFF:EYE;b.setAttribute('aria-label',show?'Passwort verbergen':'Passwort anzeigen')}
+document.querySelectorAll('.eye').forEach(b=>{setEye(b,false);b.onclick=()=>{setEye(b,b.previousElementSibling.type==='password');b.previousElementSibling.focus()}});
 let LG={code:'',roster:[],member:null};
 function loginStep(n){['l1','l2','l3'].forEach((s,i)=>$(s).classList.toggle('hide',i!==n-1))}
 async function toLogin(){show('login');loginStep(1);try{$('code').value=localStorage.getItem('ehq-code')||''}catch(e){}}
@@ -128,7 +132,7 @@ $('back1').onclick=()=>loginStep(1);
 $('back2').onclick=()=>loginStep(2);
 function pickName(m){LG.member=m;$('pname').textContent=m.display_name;$('e3').textContent='';
   $('pwOld').classList.toggle('hide',!m.claimed);$('pwNew').classList.toggle('hide',m.claimed);
-  ['pw','pw1','pw2'].forEach(i=>$(i).value='');$('b3').textContent=m.claimed?'Anmelden':'Passwort festlegen';
+  ['pw','pw1','pw2'].forEach(i=>$(i).value='');document.querySelectorAll('.eye').forEach(b=>setEye(b,false));$('b3').textContent=m.claimed?'Anmelden':'Passwort festlegen';
   loginStep(3);setTimeout(()=>$(m.claimed?'pw':'pw1').focus(),50)}
 ['pw','pw1','pw2'].forEach(i=>{$(i).oninput=()=>{$('e3').textContent=''};$(i).onkeydown=e=>{if(e.key==='Enter')$('b3').click()}});
 $('b3').onclick=async()=>{
