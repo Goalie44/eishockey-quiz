@@ -246,7 +246,7 @@ function renderTeams(){$('tsel').innerHTML=TEAMS.map(t=>`<option value="${t.id}"
 $('tsel').onchange=async()=>{TEAM=TEAMS.find(t=>t.id===$('tsel').value);await renderTeam()};
 async function renderTeam(){
   if(!TEAM){$('tlist').innerHTML='<p class="muted">Noch keine Mannschaft.</p>';return}
-  $('tcode').textContent=TEAM.code;$('tcopymsg').textContent='';
+  $('tcode').textContent=TEAM.code;$('tcopymsg').textContent='';$('tshare').classList.add('hide');
   $('tlist').innerHTML='<p class="muted">Lädt …</p>';
   const ms=await API.members(TEAM.id);
   const players=ms.filter(m=>m.role==='player');
@@ -276,9 +276,14 @@ function renderStats(ms){
   rows.sort((a,b)=>(a.pct??101)-(b.pct??101));
   $('tstats').innerHTML=rows.filter(r=>r.n).map(r=>`<div class="srow"><div><span class="muted" style="font-size:12px">Frage ${r.i+1} · ${esc(r.q.chap)}</span><br>${esc(r.q.q)}${r.n?`<div class="sbar"><i style="width:${r.pct}%"></i></div>`:''}</div><div style="text-align:right;font-weight:600">${r.n?r.pct+' %':'–'}<br><span class="muted" style="font-size:12px;font-weight:400">${r.n} Antw.</span></div></div>`).join('');
 }
-$('tcopy').onclick=async()=>{const txt=`Eishockey-Quiz 🏒\n${location.href.split('#')[0]}\nMannschaftscode: ${TEAM.code}\nDann deinen Namen antippen und beim ersten Mal ein eigenes Passwort festlegen.`;
-  try{await navigator.clipboard.writeText(txt);$('tcopymsg').textContent='Nachricht mit Link und Code kopiert – einfach in die WhatsApp-Gruppe einfügen.'}
-  catch(e){$('tcopymsg').textContent='Kopieren nicht möglich. Code: '+TEAM.code}};
+function inviteText(){return `Eishockey-Quiz\n${location.href.split('#')[0]}\nMannschaftscode: ${TEAM.code}\nLink öffnen, Code eingeben, deinen Namen antippen und beim ersten Mal ein eigenes Passwort festlegen.`}
+function fallbackCopy(t){const ta=$('tsharetxt');ta.value=t;ta.focus();ta.select();try{return document.execCommand('copy')}catch(e){return false}}
+$('tcopy').onclick=async()=>{const t=inviteText();
+  $('tsharetxt').value=t;$('twa').href='https://wa.me/?text='+encodeURIComponent(t);
+  $('tsys').classList.toggle('hide',!navigator.share);$('tshare').classList.remove('hide');
+  let ok=false;try{await navigator.clipboard.writeText(t);ok=true}catch(e){ok=fallbackCopy(t)}
+  $('tcopymsg').textContent=ok?'Nachricht kopiert – einfach in WhatsApp einfügen. Oder direkt über den Button senden.':'Kopieren wird hier nicht unterstützt – nutze den WhatsApp-Button oder markiere den Text unten.'};
+$('tsys').onclick=async()=>{try{await navigator.share({text:inviteText()})}catch(e){}};
 $('tnewcode').onclick=async()=>{if(!await ask2(`Neuen Code für ${TEAM.name} erzeugen? Der alte Code funktioniert danach nicht mehr für neue Anmeldungen.`,'Neuer Code'))return;
   try{TEAM.code=await API.newCode(TEAM);$('tcode').textContent=TEAM.code}catch(e){await ask2('Das hat nicht geklappt: '+e.message)}};
 $('tadd').onclick=async()=>{

@@ -3,6 +3,7 @@
 .inp:focus{outline:none;border-color:var(--ink)}
 textarea.inp{resize:vertical}
 .full{width:100%}
+a.btn{text-decoration:none}
 .err{color:var(--bad);font-size:14px;min-height:0;margin:-4px 0 10px}
 .err:empty{display:none}
 .names{display:grid;gap:8px;max-height:52vh;overflow:auto}
