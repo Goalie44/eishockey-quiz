@@ -36,3 +36,10 @@ a.btn{text-decoration:none}
   body.wide .q{margin-top:0}
 }
 @media (min-width:700px){.wrap{max-width:620px}}
+.hlarea{fill:rgba(240,140,0,.16);stroke:#f08c00;stroke-width:2.5;stroke-dasharray:6 5;animation:pulse 1.2s ease-in-out infinite}
+.hlline{fill:none;stroke:#f08c00;stroke-width:3;stroke-dasharray:8 6}
+.pwwrap{position:relative}
+.pwwrap .inp{padding-right:48px}
+.eye{position:absolute;right:5px;top:5px;width:38px;height:38px;border:0;background:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;border-radius:8px;padding:0}
+.eye:hover{color:var(--ink)}
+.eye svg{width:22px;height:22px}

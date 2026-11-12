@@ -1,4 +1,9 @@
-const CH='k1';
+const CHAPTERS=[
+ {id:'k1',title:'Kapitel 1',sub:'Defensive Zone · Aufbau · Bully · Regelkunde',lvl:'U13+',qs:QS1},
+ {id:'beg',title:'Eishockey-Begriffe',sub:'Die Begriffe aus dem Playbook – mit Animation',lvl:'U13–U17',qs:QSB}
+];
+let CH='k1',QS=QS1,CHAP=CHAPTERS[0];
+function setChapter(id){CHAP=CHAPTERS.find(c=>c.id===id)||CHAPTERS[0];CH=CHAP.id;QS=CHAP.qs}
 const $=id=>document.getElementById(id);
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const CODECH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -29,15 +34,14 @@ function supaAPI(cfg){
       const d=chk(await sb.rpc('me'));meCache=d&&d[0]||null;return meCache},
     async hasSession(){const {data:s}=await sb.auth.getSession();return !!s.session},
     async signOut(){await sb.auth.signOut();meCache=null},
-    async loadProgress(){return chk(await sb.from('progress').select('question_id,ok,choice').eq('member_id',meCache.id).eq('chapter',CH))},
+    async loadProgress(){return chk(await sb.from('progress').select('chapter,question_id,ok,choice').eq('member_id',meCache.id))},
     async saveAnswer(qid,ok,choice){chk(await sb.from('progress').upsert({member_id:meCache.id,chapter:CH,question_id:qid,ok,choice,answered_at:new Date().toISOString()}))},
     async resetProgress(){chk(await sb.from('progress').delete().eq('member_id',meCache.id).eq('chapter',CH))},
     async saveAttempt(score,total){chk(await sb.from('attempts').insert({member_id:meCache.id,chapter:CH,score,total}))},
-    async best(){const d=chk(await sb.from('attempts').select('score,total').eq('member_id',meCache.id).eq('chapter',CH));
-      return d.length?Math.max(...d.map(a=>Math.round(a.score/a.total*100))):null},
+    async bestAll(){return bestMap(chk(await sb.from('attempts').select('chapter,score,total').eq('member_id',meCache.id)))},
     async teams(){return chk(await sb.from('teams').select('id,name,code').order('name'))},
     async members(teamId){return chk(await sb.from('members').select('id,display_name,role,user_id,progress(question_id,ok,chapter),attempts(score,total,chapter)').eq('team_id',teamId).order('display_name'))
-      .map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.user_id,progress:(m.progress||[]).filter(p=>p.chapter===CH),best:bestOf(m.attempts)}))},
+      .map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.user_id,progress:m.progress||[],best:bestMap(m.attempts)}))},
     async addMembers(teamId,names,role){chk(await sb.from('members').insert(names.map(n=>({team_id:teamId,display_name:n,role}))))},
     async removeMember(id){chk(await sb.from('members').delete().eq('id',id))},
     async resetLogin(id){if(!chk(await sb.rpc('reset_login',{p_member:id})))throw new Error('Keine Berechtigung.')},
@@ -46,7 +50,7 @@ function supaAPI(cfg){
     async newCode(team){const code=team.code.split('-')[0]+'-'+randCode(4);chk(await sb.from('teams').update({code}).eq('id',team.id));return code}
   };
 }
-function bestOf(att){const a=(att||[]).filter(x=>x.chapter===CH);return a.length?Math.max(...a.map(x=>Math.round(x.score/x.total*100))):null}
+function bestMap(att){const r={};(att||[]).forEach(x=>{const p=Math.round(x.score/x.total*100);if(r[x.chapter]==null||p>r[x.chapter])r[x.chapter]=p});return r}
 
 /* ================= Backend: Demo (lokal) ================= */
 function mockAPI(){
@@ -66,13 +70,13 @@ function mockAPI(){
     async me(){const m=meM();if(!m)return null;const t=db.teams.find(t=>t.id===m.team_id);return {id:m.id,display_name:m.display_name,role:m.role,team_id:m.team_id,team_name:t.name}},
     async hasSession(){return !!db.session},
     async signOut(){db.session=null;save()},
-    async loadProgress(){return db.progress.filter(p=>p.member_id===db.session&&p.chapter===CH)},
+    async loadProgress(){return db.progress.filter(p=>p.member_id===db.session)},
     async saveAnswer(qid,ok,choice){db.progress=db.progress.filter(p=>!(p.member_id===db.session&&p.chapter===CH&&p.question_id===qid));db.progress.push({member_id:db.session,chapter:CH,question_id:qid,ok,choice});save()},
     async resetProgress(){db.progress=db.progress.filter(p=>!(p.member_id===db.session&&p.chapter===CH));save()},
     async saveAttempt(score,total){db.attempts.push({member_id:db.session,chapter:CH,score,total});save()},
-    async best(){return bestOf(db.attempts.filter(a=>a.member_id===db.session))},
+    async bestAll(){return bestMap(db.attempts.filter(a=>a.member_id===db.session))},
     async teams(){const m=meM();return db.teams.filter(t=>m.role==='admin'||t.id===m.team_id).sort((a,b)=>a.name.localeCompare(b.name))},
-    async members(tid){return db.members.filter(m=>m.team_id===tid).sort((a,b)=>a.display_name.localeCompare(b.display_name)).map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.pw,progress:db.progress.filter(p=>p.member_id===m.id&&p.chapter===CH),best:bestOf(db.attempts.filter(a=>a.member_id===m.id))}))},
+    async members(tid){return db.members.filter(m=>m.team_id===tid).sort((a,b)=>a.display_name.localeCompare(b.display_name)).map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.pw,progress:db.progress.filter(p=>p.member_id===m.id),best:bestMap(db.attempts.filter(a=>a.member_id===m.id))}))},
     async addMembers(tid,names,role){names.forEach(n=>db.members.push({id:uid(),team_id:tid,display_name:n,role}));save()},
     async removeMember(id){db.members=db.members.filter(m=>m.id!==id);db.progress=db.progress.filter(p=>p.member_id!==id);save()},
     async resetLogin(id){const m=db.members.find(x=>x.id===id);delete m.pw;save()},
@@ -95,6 +99,10 @@ function ask2(text,yes='OK'){return new Promise(r=>{$('mtext').textContent=text;
 function busy(btn,on,label){if(on){btn.dataset.l=btn.textContent;btn.textContent=label||'…';btn.disabled=true}else{btn.textContent=btn.dataset.l||btn.textContent;btn.disabled=false}}
 
 /* ================= Login ================= */
+const EYE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7c1.7 0 3.2-.4 4.5-1.1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+function setEye(b,show){const i=b.previousElementSibling;i.type=show?'text':'password';b.innerHTML=show?EYE_OFF:EYE;b.setAttribute('aria-label',show?'Passwort verbergen':'Passwort anzeigen')}
+document.querySelectorAll('.eye').forEach(b=>{setEye(b,false);b.onclick=()=>{setEye(b,b.previousElementSibling.type==='password');b.previousElementSibling.focus()}});
 let LG={code:'',roster:[],member:null};
 function loginStep(n){['l1','l2','l3'].forEach((s,i)=>$(s).classList.toggle('hide',i!==n-1))}
 async function toLogin(){show('login');loginStep(1);try{$('code').value=localStorage.getItem('ehq-code')||''}catch(e){}}
@@ -124,7 +132,7 @@ $('back1').onclick=()=>loginStep(1);
 $('back2').onclick=()=>loginStep(2);
 function pickName(m){LG.member=m;$('pname').textContent=m.display_name;$('e3').textContent='';
   $('pwOld').classList.toggle('hide',!m.claimed);$('pwNew').classList.toggle('hide',m.claimed);
-  ['pw','pw1','pw2'].forEach(i=>$(i).value='');$('b3').textContent=m.claimed?'Anmelden':'Passwort festlegen';
+  ['pw','pw1','pw2'].forEach(i=>$(i).value='');document.querySelectorAll('.eye').forEach(b=>setEye(b,false));$('b3').textContent=m.claimed?'Anmelden':'Passwort festlegen';
   loginStep(3);setTimeout(()=>$(m.claimed?'pw':'pw1').focus(),50)}
 ['pw','pw1','pw2'].forEach(i=>{$(i).oninput=()=>{$('e3').textContent=''};$(i).onkeydown=e=>{if(e.key==='Enter')$('b3').click()}});
 $('b3').onclick=async()=>{
@@ -147,25 +155,32 @@ async function enter(){
 $('logout').onclick=async()=>{await API.signOut();ME=null;toLogin()};
 
 /* ================= Fortschritt ================= */
-let answers={},full=true;
-const ALL=QS.map((q,i)=>i);
-const qIndex=Object.fromEntries(QS.map((q,i)=>[q.id,i]));
-async function loadAnswers(){answers={};try{(await API.loadProgress()).forEach(p=>{if(p.question_id in qIndex)answers[qIndex[p.question_id]]={ok:p.ok,oi:p.choice}})}catch(e){}}
+let full=true,ALLP={},BEST={};
+async function loadAnswers(){ALLP={};CHAPTERS.forEach(c=>ALLP[c.id]={});
+  try{(await API.loadProgress()).forEach(p=>{const c=CHAPTERS.find(c=>c.id===p.chapter);if(!c)return;const i=c.qs.findIndex(q=>q.id===p.question_id);if(i>=0)ALLP[c.id][i]={ok:p.ok,oi:p.choice}})}catch(e){}
+  answers=ALLP[CH]}
 async function home(){
   show('home');
   $('hello').textContent='Hallo '+ME.display_name.split(' ')[0]+'!';$('hteam').textContent=ME.team_name.toUpperCase();
-  const n=Object.keys(answers).length,right=Object.values(answers).filter(a=>a.ok).length,pct=Math.round(n/QS.length*100);
-  $('hdone').textContent=n?`${n} von ${QS.length} beantwortet · ${right} richtig`:'Noch nicht begonnen';
-  $('hpct').textContent=pct+' %';$('hbar').style.width=pct+'%';
-  $('hstart').textContent=n===0?'Starten':n<QS.length?'Weitermachen':'Ergebnis ansehen';
-  $('hfresh').classList.toggle('hide',n===0);
   $('htrainer').classList.toggle('hide',ME.role==='player');
-  $('hbest').textContent='';
-  try{const b=await API.best();if(b!=null)$('hbest').textContent=`Bestes Ergebnis: ${b} %`}catch(e){}
+  try{BEST=await API.bestAll()}catch(e){BEST={}}
+  $('chapters').innerHTML='';
+  CHAPTERS.forEach(c=>{const ans=ALLP[c.id]||{},n=Object.keys(ans).length,right=Object.values(ans).filter(a=>a.ok).length,pct=Math.round(n/c.qs.length*100);
+    const d=document.createElement('div');d.className='card';d.style.marginBottom='14px';
+    d.innerHTML=`<div class="row" style="justify-content:space-between"><span class="cond" style="font-size:22px;font-weight:700">${esc(c.title)}</span><span class="tag lvl">${esc(c.lvl)}</span></div>
+    <div class="muted" style="font-size:15px;margin:2px 0 10px">${esc(c.sub)} · ${c.qs.length} Fragen</div>
+    <div style="display:flex;justify-content:space-between;font-weight:600;font-size:15px"><span>${n?`${n} von ${c.qs.length} beantwortet · ${right} richtig`:'Noch nicht begonnen'}</span><span>${pct} %</span></div>
+    <div class="bar" style="margin:6px 0 12px"><i style="width:${pct}%"></i></div>
+    <div class="row"><button class="btn yel" data-a="go">${n===0?'Starten':n<c.qs.length?'Weitermachen':'Ergebnis ansehen'}</button>${n?'<button class="btn" data-a="fresh">Von vorne</button>':''}</div>
+    ${BEST[c.id]!=null?`<div class="muted" style="font-size:14px;margin-top:10px">Bestes Ergebnis: ${BEST[c.id]} %</div>`:''}`;
+    d.querySelector('[data-a=go]').onclick=()=>{setChapter(c.id);answers=ALLP[c.id];
+      if(Object.keys(answers).length===c.qs.length){order=c.qs.map((q,i)=>i);full=true;result();return}
+      startRun(c.qs.map((q,i)=>i),true)};
+    const fr=d.querySelector('[data-a=fresh]');
+    if(fr)fr.onclick=async()=>{if(!await ask2(`„${c.title}“ von vorne beginnen? Deine bisherigen Antworten in diesem Kapitel werden gelöscht.`,'Von vorne'))return;
+      setChapter(c.id);try{await API.resetProgress()}catch(e){}ALLP[c.id]={};answers=ALLP[c.id];startRun(c.qs.map((q,i)=>i),true)};
+    $('chapters').appendChild(d)});
 }
-$('hstart').onclick=()=>{const n=Object.keys(answers).length;if(n===QS.length){order=ALL;full=true;result();return}startRun(ALL,true)};
-$('hfresh').onclick=async()=>{if(!await ask2('Kapitel 1 von vorne beginnen? Deine bisherigen Antworten werden gelöscht.','Von vorne'))return;
-  try{await API.resetProgress()}catch(e){}answers={};startRun(ALL,true)};
 
 /* ================= Quiz ================= */
 function doneCount(){return order.filter(i=>answers[i]).length}
@@ -213,11 +228,11 @@ async function replaySolve(){const tk=++token;build(cur);jump(cur.intro);await w
 $('next').onclick=()=>{token++;
   if(idx<order.length-1){idx++;loadQ();return}
   const open=order.findIndex(i=>!answers[i]);
-  if(open>=0){idx=open;loadQ()}else result()};
+  if(open>=0){idx=open;loadQ()}else result(true)};
 $('prev').onclick=()=>{if(idx>0){token++;idx--;loadQ()}};
 $('menu').onclick=()=>{token++;home()};
 
-function result(){
+function result(save){
   show('result');
   const ids=order,ok=i=>answers[i]&&answers[i].ok,right=ids.filter(ok).length,pct=Math.round(right/ids.length*100);
   $('pct').textContent=pct+' %';$('score').textContent=`${right} von ${ids.length} richtig`;
@@ -226,12 +241,13 @@ function result(){
   const wrong=ids.filter(i=>!ok(i));
   $('retryWrong').classList.toggle('hide',!wrong.length);
   $('retryWrong').onclick=()=>startRun(wrong,false);
-  if(full&&!result.saved){API.saveAttempt(right,ids.length).catch(()=>{})}
+  if(full&&save){API.saveAttempt(right,ids.length).catch(()=>{})}
 }
 $('toHome').onclick=()=>home();
 
 /* ================= Trainerbereich ================= */
-let TEAMS=[],TEAM=null;
+let TEAMS=[],TEAM=null,TCH='k1';
+const tChap=()=>CHAPTERS.find(c=>c.id===TCH);
 $('htrainer').onclick=()=>openTrainer();
 $('tback').onclick=()=>home();
 async function openTrainer(){
@@ -240,9 +256,11 @@ async function openTrainer(){
   $('trole').textContent=ME.role==='admin'?'Admin':'Trainer';
   TEAMS=await API.teams();
   if(!TEAM||!TEAMS.find(t=>t.id===TEAM.id))TEAM=TEAMS.find(t=>t.id!==ME.team_id||ME.role!=='admin')||TEAMS[0];
+  $('tchap').innerHTML=CHAPTERS.map(c=>`<option value="${c.id}">${esc(c.title)}</option>`).join('');$('tchap').value=TCH;
   renderTeams();await renderTeam();
 }
 function renderTeams(){$('tsel').innerHTML=TEAMS.map(t=>`<option value="${t.id}"${TEAM&&t.id===TEAM.id?' selected':''}>${esc(t.name)}</option>`).join('')}
+$('tchap').onchange=async()=>{TCH=$('tchap').value;await renderTeam()};
 $('tsel').onchange=async()=>{TEAM=TEAMS.find(t=>t.id===$('tsel').value);await renderTeam()};
 async function renderTeam(){
   if(!TEAM){$('tlist').innerHTML='<p class="muted">Noch keine Mannschaft.</p>';return}
@@ -253,11 +271,11 @@ async function renderTeam(){
   $('tcount').textContent=`${players.length} Spieler · ${players.filter(m=>m.claimed).length} angemeldet`;
   $('tlist').innerHTML=ms.length?'':'<p class="muted" style="margin:10px 0 0">Noch niemand angelegt.</p>';
   ms.forEach(m=>{
-    const n=m.progress.length,r=m.progress.filter(p=>p.ok).length,pct=Math.round(n/QS.length*100);
+    const pr=m.progress.filter(p=>p.chapter===TCH),n=pr.length,r=pr.filter(p=>p.ok).length,pct=Math.round(n/tChap().qs.length*100),bst=m.best[TCH];
     const canEdit=ME.role==='admin'||m.role==='player';const self=m.id===ME.id;
     const d=document.createElement('div');d.className='mrow';
     d.innerHTML=`<div class="who"><b>${esc(m.name)}${m.role!=='player'?` <span class="tag" style="font-size:11px">${m.role==='admin'?'Admin':'Trainer'}</span>`:''}</b>
-      <span>${m.claimed?`${pct} % geschafft · ${r}/${n} richtig${m.best!=null?` · Bestes: ${m.best} %`:''}`:'noch nicht angemeldet'}</span>
+      <span>${m.claimed?`${pct} % geschafft · ${r}/${n} richtig${bst!=null?` · Bestes: ${bst} %`:''}`:'noch nicht angemeldet'}</span>
       <div class="minibar"><i style="width:${pct}%"></i></div></div>
       <div class="acts">${canEdit&&!self&&m.claimed?'<button class="btn small" data-a="reset">Passwort</button>':''}${canEdit&&!self?'<button class="btn small" data-a="del">Entfernen</button>':''}</div>`;
     d.querySelectorAll('[data-a]').forEach(b=>b.onclick=async()=>{
@@ -270,7 +288,7 @@ async function renderTeam(){
   renderStats(ms.filter(m=>m.role==='player'));
 }
 function renderStats(ms){
-  const rows=QS.map((q,i)=>{const ps=ms.flatMap(m=>m.progress.filter(p=>p.question_id===q.id));
+  const rows=tChap().qs.map((q,i)=>{const ps=ms.flatMap(m=>m.progress.filter(p=>p.chapter===TCH&&p.question_id===q.id));
     const ok=ps.filter(p=>p.ok).length;return {i,q,n:ps.length,pct:ps.length?Math.round(ok/ps.length*100):null}});
   if(!rows.some(r=>r.n)){$('tstats').innerHTML='<p class="muted" style="margin:0;font-size:14px">Noch keine Antworten.</p>';return}
   rows.sort((a,b)=>(a.pct??101)-(b.pct??101));
@@ -305,3 +323,4 @@ $('tcreate').onclick=async()=>{const n=$('tnewteam').value.trim();$('tcreateerr'
   try{if(await API.hasSession()){await enter();return}}catch(e){}
   toLogin();
 })();
+
