@@ -128,6 +128,13 @@ grant execute on function public.claim_member(text, uuid, text) to authenticated
 grant execute on function public.me() to authenticated;
 grant execute on function public.reset_login(uuid) to authenticated;
 
+-- ---------- Grundrechte (falls Supabase Tabellen nicht automatisch freigibt) ----------
+grant usage on schema public to anon, authenticated;
+grant select, delete on public.teams, public.members, public.progress, public.attempts to authenticated;
+grant insert, update on public.teams, public.progress to authenticated;
+grant insert on public.attempts to authenticated;
+grant usage, select on all sequences in schema public to authenticated;
+
 -- ---------- Zugriffsregeln (Row Level Security) ----------
 alter table public.teams    enable row level security;
 alter table public.members  enable row level security;
