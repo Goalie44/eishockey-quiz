@@ -36,3 +36,5 @@ a.btn{text-decoration:none}
   body.wide .q{margin-top:0}
 }
 @media (min-width:700px){.wrap{max-width:620px}}
+.hlarea{fill:rgba(240,140,0,.16);stroke:#f08c00;stroke-width:2.5;stroke-dasharray:6 5;animation:pulse 1.2s ease-in-out infinite}
+.hlline{fill:none;stroke:#f08c00;stroke-width:3;stroke-dasharray:8 6}

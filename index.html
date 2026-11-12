@@ -99,6 +99,8 @@ a.btn{text-decoration:none}
   body.wide .q{margin-top:0}
 }
 @media (min-width:700px){.wrap{max-width:620px}}
+.hlarea{fill:rgba(240,140,0,.16);stroke:#f08c00;stroke-width:2.5;stroke-dasharray:6 5;animation:pulse 1.2s ease-in-out infinite}
+.hlline{fill:none;stroke:#f08c00;stroke-width:3;stroke-dasharray:8 6}
 
 body{padding-bottom:env(safe-area-inset-bottom)}
 </style>
@@ -147,15 +149,8 @@ body{padding-bottom:env(safe-area-inset-bottom)}
 <section id="home" class="hide">
   <div class="row" style="justify-content:space-between;margin-bottom:6px"><span class="cond muted" style="font-size:15px;font-weight:600" id="hteam"></span><button class="btn small" id="logout">Abmelden</button></div>
   <h1 id="hello"></h1>
-  <div class="card" style="margin:12px 0 14px">
-    <div class="row" style="justify-content:space-between"><span class="cond" style="font-size:22px;font-weight:700">Kapitel 1</span><span class="tag lvl">U13+</span></div>
-    <div class="muted" style="font-size:15px;margin:2px 0 10px">Defensive Zone · Aufbau · Bully · Regelkunde · 13 Fragen</div>
-    <div style="display:flex;justify-content:space-between;font-weight:600;font-size:15px"><span id="hdone"></span><span id="hpct"></span></div>
-    <div class="bar" style="margin:6px 0 12px"><i id="hbar" style="width:0"></i></div>
-    <div class="row"><button class="btn yel" id="hstart">Starten</button><button class="btn hide" id="hfresh">Von vorne</button></div>
-    <div class="muted" id="hbest" style="font-size:14px;margin-top:10px"></div>
-  </div>
-  <div class="card muted" style="margin-bottom:14px;font-size:15px">Weitere Kapitel (Rush, offensive Zone, Special Teams, Forecheck …) folgen.</div>
+  <div id="chapters" style="margin-top:12px"></div>
+  <div class="card muted" style="margin-bottom:14px;font-size:15px">Weitere Kapitel (Aufbau, Rush, offensive Zone, Special Teams, Forecheck …) folgen.</div>
   <div class="legend"><span><span class="dot" style="background:var(--ink);border:2px solid var(--yel)"></span>Dein Team</span><span><span class="dot" style="background:var(--red)"></span>Gegner</span><span><span class="dot" style="background:var(--ink)"></span>Puck</span></div>
   <button class="btn primary full hide" id="htrainer" style="margin-top:16px">Trainerbereich</button>
 </section>
@@ -209,6 +204,8 @@ body{padding-bottom:env(safe-area-inset-bottom)}
   </div>
 
   <div class="card" style="margin-bottom:14px">
+    <label class="lbl" for="tchap">Kapitel (für Fortschritt und Auswertung)</label>
+    <select id="tchap" class="inp"></select>
     <div class="row" style="justify-content:space-between"><strong>Spieler und Trainer</strong><span class="muted" id="tcount" style="font-size:14px"></span></div>
     <div id="tlist"></div>
   </div>
@@ -225,7 +222,7 @@ body{padding-bottom:env(safe-area-inset-bottom)}
   </div>
 
   <div class="card" style="margin-bottom:14px">
-    <strong>Fragen-Auswertung (Kapitel 1)</strong>
+    <strong>Fragen-Auswertung</strong>
     <p class="muted" style="font-size:14px;margin:4px 0 8px">Wie viele der Antworten waren richtig – so siehst du, was du im Training nochmal aufgreifen solltest.</p>
     <div id="tstats"></div>
   </div>
@@ -274,7 +271,7 @@ full:{vb:'0 0 600 300',svg:`
 const Z={T:[200,338],gD1:[100,55],gD2:[300,55]};
 const S=(o)=>Object.assign({},Z,o);
 
-const QS=[
+const QS1=[
 {id:'k1-01',chap:'Defensive Zone',lvl:'U13+',rink:'zone',
  setup:S({D1:[250,230],D2:[150,240],F1:[300,140],F2:[200,150],F3:[120,140],gF1:[310,300],gF2:[250,190],gF3:[130,200],P:[318,306]}),
  intro:[{t:2200,m:{gF1:[348,372],P:[356,378],D1:[322,360],F1:[318,282],gF2:[240,292],F2:[245,215],F3:[160,215],D2:[178,222],gF3:[140,250]}}],
@@ -381,6 +378,173 @@ const QS=[
 ];
 
 
+const HAUS={d:'M186 350 L110 262 L110 212 L290 212 L290 262 L214 350 Z'};
+const HASH={d:'M328 260a16 16 0 1 0 32 0a16 16 0 1 0 -32 0 M220 260a16 16 0 1 0 32 0a16 16 0 1 0 -32 0'};
+const CORNERS={d:'M308 372a42 42 0 1 0 84 0a42 42 0 1 0 -84 0 M8 372a42 42 0 1 0 84 0a42 42 0 1 0 -84 0'};
+const BOXLINES={d:'M200 46 V350 M5 180 H395',line:true};
+const OZ='gegnerisches Tor';
+const I0=[{t:300,m:{}}];
+const SD=o=>Object.assign({T:[200,338]},o);
+const SO=o=>Object.assign({gT:[200,338]},o);
+
+const QSB=[
+{id:'b-01',chap:'Zonen & Positionen',lvl:'U13+',rink:'zone',
+ setup:SD({D1:[255,322],D2:[150,322],F1:[318,340],F2:[255,225],F3:[150,225],gF1:[345,368],gF2:[225,280],gD1:[100,55],gD2:[300,55],P:[352,376]}),intro:I0,
+ q:'Was ist das „Haus“?',
+ o:['Der gefährliche Bereich vor unserem Tor – von den Pfosten bis hoch zu den Bullykreisen','Die Strafbank','Die Ecke hinter dem Tor','Die neutrale Zone zwischen den blauen Linien'],
+ ex:'Das Haus ist der gefährlichste Bereich vor dem Tor: von den Pfosten über die Bullypunkte bis zum oberen Rand der Bullykreise. Aus dem Haus fallen die meisten Tore – das schützen wir.',
+ solve:[{t:700,m:{},hl:HAUS,txt:'Das Haus'}]},
+
+{id:'b-02',chap:'Zonen & Positionen',lvl:'U13+',rink:'zone',
+ setup:SD({D1:[320,335],D2:[165,290],F1:[300,260],gF1:[345,368],gF2:[240,292],gD1:[100,55],gD2:[300,55],P:[352,376]}),intro:I0,
+ q:'Was bedeutet „Netfront“?',
+ o:['Der Platz direkt vor dem Tor','Das Tornetz hinten','Die Linie zwischen den Pfosten','Der Bereich an der blauen Linie'],
+ ex:'Netfront ist der Platz direkt vor dem Tor. In der eigenen Zone steht D2 dort, schützt die Mitte und hat den Gegner im Blick. In der Angriffszone steht dort unser Spieler, nimmt dem Torwart die Sicht und holt Rebounds.',
+ solve:[{t:900,m:{D2:[210,318]},hl:[210,318,26],txt:'D2 an der Netfront'}]},
+
+{id:'b-03',chap:'Zonen & Positionen',lvl:'U13+',rink:'zone',
+ setup:SD({D1:[318,330],D2:[230,322],gF1:[342,366],gD1:[100,55],gD2:[300,55],P:[350,374]}),intro:I0,
+ q:'Was ist der „kurze Pfosten“?',
+ o:['Der Torpfosten auf der Seite, auf der die Scheibe ist','Der Pfosten, der weiter weg von der Scheibe ist','Der kleinere der beiden Pfosten','Die Mitte zwischen den Pfosten'],
+ ex:'Kurzer Pfosten = Pfosten auf der Scheibenseite, langer Pfosten = der andere. Wechselt die Scheibe die Seite, wechselt auch der kurze Pfosten.',
+ solve:[{t:500,m:{},hl:[216,350,15],txt:'Kurzer Pfosten'},{t:1300,m:{P:[52,374],gF1:[60,366],D1:[82,332],D2:[172,322]},hl:[184,350,15],txt:'Scheibe links – jetzt ist das der kurze Pfosten'}]},
+
+{id:'b-04',chap:'Zonen & Positionen',lvl:'U13+',rink:'zone',
+ setup:SD({C:[290,274],gC:[290,246],D1:[345,274],gW1:[345,246],F2:[236,274],gW2:[236,246],D2:[248,296],F3:[222,292],gD1:[110,60],gD2:[300,60],P:[290,260]}),intro:I0,
+ q:'Was sind die „Hashmarks“?',
+ o:['Die kurzen Striche links und rechts am Bullykreis','Die Punkte in der neutralen Zone','Die Torlinie','Die Markierung im Torraum'],
+ ex:'Hashmarks sind die kleinen Striche links und rechts am Bullykreis. Beim Bully stellen sich die Spieler daran auf – zum Beispiel D1 außen an den Hashmarks.',
+ solve:[{t:700,m:{},hl:HASH,txt:'Hashmarks'}]},
+
+{id:'b-05',chap:'Zonen & Positionen',lvl:'U13+',rink:'zone',
+ setup:SD({D1:[330,350],F1:[310,320],D2:[225,322],F2:[275,210],F3:[200,235],gF1:[350,372],gD1:[100,60],gD2:[300,60],P:[355,380]}),intro:I0,
+ q:'Was ist der „Point“?',
+ o:['Die Position der Verteidiger an der blauen Linie','Der Bullypunkt in der Mitte','Ein Punkt für ein Tor','Die Spitze des Torraums'],
+ ex:'Der Point ist die Position der Verteidiger an der blauen Linie. Von dort kommen viele Schüsse – deshalb schließen F2 und F3 zuerst die Schussbahn.',
+ solve:[{t:1000,m:{P:[306,66]},hl:[300,60,26],txt:'Pass zum Point'}]},
+
+{id:'b-06',chap:'Defensive',lvl:'U13+',rink:'zone',
+ setup:SD({D1:[230,200],D2:[140,150],F1:[290,120],F2:[110,240],F3:[330,230],gF1:[345,368],gF2:[300,165],gD1:[100,55],gD2:[300,55],P:[352,376]}),intro:I0,
+ q:'Was bedeutet „Box + 1“?',
+ o:['Unsere Grundordnung in der DZ: Jeder hat seine Zone, Gegner werden von Zone zu Zone übergeben','Ein Spieler sitzt auf der Strafbank','Wir spielen mit fünf Stürmern','Vier Spieler stürmen, einer bleibt hinten'],
+ ex:'Box + 1 ist unsere Basis in der defensiven Zone: Jeder Spieler ist in seiner Zone dafür verantwortlich, das Spiel zu stoppen. Wechselt ein Gegner die Zone, übergeben wir ihn. Je nach Situation kann jeder in jede Zone kommen.',
+ solve:[{t:1200,m:{D1:[328,345],F1:[296,288],D2:[218,312],F2:[306,192],F3:[218,192]},hl:BOXLINES,txt:'Jeder in seiner Zone'},{t:1300,m:{gF2:[110,175],F2:[262,186],F3:[150,186]},txt:'Gegner wird übergeben: F2 → F3'}]},
+
+{id:'b-07',chap:'Defensive',lvl:'U13+',rink:'zone',
+ setup:SD({D1:[318,325],D2:[215,322],F1:[300,240],F2:[270,205],F3:[195,235],gF1:[332,362],gF2:[230,285],gD1:[100,55],gD2:[300,55],P:[300,330]}),
+ intro:[{t:900,m:{P:[352,386]}}],
+ q:'Was bedeutet „Überladen“?',
+ o:['Bei freier Scheibe oder gestopptem Spiel Überzahl an der Scheibe schaffen','Zu viele Spieler auf dem Eis haben','Die Scheibe hoch aus der Zone schießen','Mehr Ausrüstung tragen'],
+ ex:'Überladen heißt: Bei gestopptem Spiel oder freier Scheibe schaffen wir Überzahl an der Scheibe. Aber: Hinter dem eigenen Tor überladen wir nicht – sonst ist der Slot frei.',
+ solve:[{t:1000,m:{D1:[352,360],F1:[326,378],gF1:[340,370]},hl:[342,374,44],txt:'Überladen: 2 gegen 1'}]},
+
+{id:'b-08',chap:'Defensive',lvl:'U13+',rink:'zone',
+ setup:SD({D1:[300,270],D2:[215,320],F2:[260,200],gF1:[372,220],gD1:[100,55],gD2:[300,55],P:[380,226]}),intro:I0,
+ q:'Was heißt „Pin“ – den Gegner festmachen?',
+ o:['Den Gegner an der Bande festmachen, damit er nicht wegkommt','Den Puck mit dem Schlittschuh stoppen','Einen Pass an die Bande spielen','Sich vor das Tor stellen'],
+ ex:'Pin heißt: Den Gegner an der Bande festmachen – Körper zwischen Gegner und Tor, Schläger zum Puck. So stoppen wir seine Bewegung und gewinnen die Scheibe.',
+ solve:[{t:1100,m:{gF1:[378,295],P:[386,301],D1:[356,303]},hl:[370,300,30],txt:'Pin: an der Bande festgemacht'},{t:600,m:{P:[340,312]},txt:'Scheibe gewonnen'}]},
+
+{id:'b-09',chap:'Defensive',lvl:'U13+',rink:'zone',
+ setup:SD({D1:[245,275],D2:[170,320],gF1:[300,180],gD1:[100,55],gD2:[300,55],P:[310,186]}),intro:I0,
+ q:'Was heißt „Stick on Puck“?',
+ o:['Den Schläger zum Puck bringen – nicht auf den Körper','Mit dem Schläger aufs Eis klopfen','Den Schläger hochhalten','Den Puck mit der Hand spielen'],
+ ex:'Stick on Puck: Der Schläger geht zuerst zum Puck. So nehmen wir dem Gegner die Scheibe weg, ohne eine Strafe zu riskieren – erst Schläger, dann Körper.',
+ solve:[{t:1000,m:{gF1:[275,245],P:[286,251],D1:[262,280]},txt:'Schläger zum Puck'},{t:500,m:{P:[232,300]},txt:'Scheibe gewonnen'}]},
+
+{id:'b-10',chap:'Defensive',lvl:'U13+',rink:'zone',
+ setup:SD({D1:[290,330],D2:[160,250],F3:[200,180],gF1:[345,368],gF2:[245,205],gD1:[100,55],gD2:[300,55],P:[352,376]}),intro:I0,
+ q:'„Box-out“ – was bedeutet das?',
+ o:['Zwischen Gegner und Tor stehen und ihn vom Tor fernhalten – Abwehrseite halten, Schläger kontrollieren','Den Gegner in die Strafbox schicken','Die Scheibe aus der Zone schießen','Mit vier Spielern eine Box bilden'],
+ ex:'Box-out heißt: Wir stehen zwischen Gegner und Tor (Abwehrseite), kontrollieren seinen Schläger und lassen ihn nicht vors Tor. So gibt es keinen Abpraller und kein Abfälschen.',
+ solve:[{t:1000,m:{gF2:[222,268],D2:[214,300,-90]},txt:'Gegner will vors Tor'},{t:700,m:{gF2:[214,276]},hl:[214,290,30],txt:'Box-out: Er kommt nicht durch'}]},
+
+{id:'b-11',chap:'Aufbau',lvl:'U13+',rink:'zone',
+ setup:SD({D1:[110,385],D2:[300,380],F1:[40,240],F2:[160,200],F3:[340,250],gF1:[150,330],gD1:[100,55],gD2:[300,55],P:[118,390]}),intro:I0,
+ q:'Was bedeutet „D2D“?',
+ o:['Ein Pass von Verteidiger zu Verteidiger','Zwei gegen zwei','Ein Doppelpass zwischen zwei Stürmern','Beide Verteidiger gehen auf den Puck'],
+ ex:'D2D (D to D) ist ein Pass von einem Verteidiger zum anderen. So verlagern wir das Spiel auf die andere Seite – aber nur, wenn der Weg frei ist.',
+ solve:[{t:400,m:{gF1:[130,365]},txt:'Druck auf D1'},{t:800,m:{P:'D2'},txt:'D2D: Seitenwechsel'},{t:600,m:{P:'F3'},txt:'Pass zu F3'}]},
+
+{id:'b-12',chap:'Aufbau',lvl:'U13+',rink:'zone',
+ setup:SD({D2:[176,346],D1:[100,330],C:[112,305],F3:[300,246],F2:[300,150],gF1:[120,280],gD1:[100,55],gD2:[300,55],P:[186,340]}),intro:I0,
+ q:'Was ist ein „Wheel“?',
+ o:['Der Verteidiger fährt mit der Scheibe hinter dem Tor herum auf die andere Seite','Eine Drehung beim Bully','Ein Schuss mit Drehung','Die Scheibe rollt auf der Kante'],
+ ex:'Beim Wheel fährt der Verteidiger mit der Scheibe hinter dem eigenen Tor herum und nimmt den Druck mit auf die andere Seite – von dort spielt er den Pass, zum Beispiel zu F3 über den Hashmarks.',
+ solve:[{t:700,m:{D2:[195,388],P:'D2'},txt:'Hinters Tor …'},{t:800,m:{D2:[245,386],P:'D2',F3:[344,246]},txt:'… herum: Wheel'},{t:550,m:{P:'F3'},txt:'Pass zu F3'}]},
+
+{id:'b-13',chap:'Angriff',lvl:'U15+',rink:'zone',label:OZ,
+ setup:SO({F1:[350,370],F2:[205,300],F3:[200,190],D1:[100,60],D2:[300,60],gD1:[325,345],gF1:[220,250],gD2:[180,320],P:[358,378]}),intro:I0,
+ q:'Was meint das Playbook mit „Todeszone“?',
+ o:['Bande und Ecken in der Angriffszone – dort sind wir ungefährlich','Der Torraum des Gegners','Die Strafbank','Die Zone hinter der roten Linie'],
+ ex:'Aus Bande und Ecken fallen kaum Tore. Wir wollen dort weg – mit der Scheibe Richtung Mitte und Tor, wo wir gefährlich sind.',
+ solve:[{t:700,m:{},hl:CORNERS,txt:'Todeszone: Bande und Ecken'},{t:1100,m:{F1:[300,255],P:'F1'},hl:0,txt:'Weg von der Bande – zur Mitte'}]},
+
+{id:'b-14',chap:'Angriff',lvl:'U15+',rink:'zone',label:OZ,
+ setup:SO({F1:[345,368],F2:[205,318],F3:[230,180],D1:[100,60],D2:[300,60],gD1:[325,340],gD2:[185,318],gF1:[240,200],gF2:[140,140],P:[352,376]}),intro:I0,
+ q:'Was ist ein „Sweet Spot“?',
+ o:['Freies Eis, von dem aus man gut schießen kann','Die Stelle, an der der Puck am besten gleitet','Der Platz auf der Spielerbank','Die Ecke hinter dem Tor'],
+ ex:'Der Sweet Spot ist freies Eis mit guter Schussposition. Wer sich ständig bewegt und den Sweet Spot findet, bekommt Zeit und Raum für einen guten Schuss.',
+ solve:[{t:900,m:{F3:[150,225]},hl:[150,225,28],txt:'F3 findet den Sweet Spot'},{t:600,m:{P:'F3'},txt:'Pass'},{t:450,m:{P:[192,346]},hl:0,txt:'Schuss!'}]},
+
+{id:'b-15',chap:'Angriff',lvl:'U15+',rink:'zone',label:OZ,
+ setup:SO({F1:[150,14],F2:[300,14],F3:[60,14],D1:[210,12],gD1:[140,110],gD2:[270,110],P:[158,20]}),intro:I0,
+ q:'Wer ist der „Trailer“?',
+ o:['Ein Spieler, der dem Angriff hinterherfährt und für einen Rückpass bereit ist','Der Spieler, der die Trinkflaschen bringt','Der Stürmer, der als Erster in die Zone fährt','Ein Spieler, der auf der Strafbank wartet'],
+ ex:'Der Trailer fährt dem Angriff hinterher. Ziehen die Stürmer die Verteidiger nach hinten, ist hinter ihnen Platz – der Pass hoch zum Trailer ist eine der sechs Optionen beim Eintritt.',
+ solve:[{t:1300,m:{F1:[140,230],P:[148,236],F2:[300,250],F3:[55,190],gD1:[150,280],gD2:[270,290],D1:[205,150]},txt:'Stürmer ziehen nach hinten'},{t:500,m:{P:'D1'},hl:[205,150,26],txt:'Pass hoch zum Trailer'},{t:450,m:{P:[205,346]},hl:0,txt:'Schuss!'}]},
+
+{id:'b-16',chap:'Angriff',lvl:'U15+',rink:'zone',label:OZ,
+ setup:SO({D1:[300,62],F2:[240,250],F1:[350,300],F3:[110,230],gD1:[230,300],gD2:[160,300],gF1:[290,120],P:[308,68]}),intro:I0,
+ q:'Was ist ein „Screen“?',
+ o:['Ein Spieler steht vor dem Torhüter und nimmt ihm die Sicht','Der Videowürfel in der Halle','Ein Schuss von der blauen Linie','Ein Pass hinter dem Tor'],
+ ex:'Beim Screen steht ein Spieler direkt vor dem Torhüter und nimmt ihm die Sicht. Dazu kommen Tip-in (Abfälschen) und Rebound (Abpraller) – deshalb steht immer ein Spieler vor dem Tor.',
+ solve:[{t:900,m:{F2:[202,316]},hl:[202,322,24],txt:'F2 nimmt die Sicht'},{t:550,m:{P:[206,344]},txt:'Schuss durch den Screen'}]},
+
+{id:'b-17',chap:'Angriff',lvl:'U15+',rink:'zone',label:OZ,
+ setup:SO({D1:[80,62],F1:[378,230],F2:[205,300],F3:[200,170],gD1:[250,330],gD2:[150,330],gF1:[110,110],P:[88,68]}),intro:I0,
+ q:'Was bedeutet „Rim“?',
+ o:['Die Scheibe hart an der Bande entlang um die Zone spielen','Ein Schuss ins obere Toreck','Den Puck hochlupfen','Den Gegner an die Bande drücken'],
+ ex:'Beim Rim spielt man die Scheibe hart an der Bande entlang, oft hinter dem Tor herum. Die Gegner kommen schwer ran – und auf der anderen Seite nimmt ein Mitspieler die Scheibe an.',
+ solve:[{t:500,m:{P:[14,300]},txt:'Rim an der Bande …'},{t:500,m:{P:[110,402]}},{t:600,m:{P:[300,402]}},{t:500,m:{P:[384,238]},txt:'… zu F1 auf der anderen Seite'}]},
+
+{id:'b-18',chap:'Special Teams',lvl:'U15+',rink:'zone',label:OZ,
+ setup:SO({D1:[200,62],F1:[60,230],F3:[340,230],F2:[200,322],C:[200,215],gD1:[140,150],gD2:[260,150],gF1:[150,285],gF2:[250,285],P:[208,68]}),intro:I0,
+ q:'Wer ist im Überzahlspiel der „Bumper“?',
+ o:['Der Spieler in der Mitte – im Slot zwischen den Bullykreisen','Der Spieler direkt vor dem Tor','Der Spieler an der blauen Linie','Der Spieler hinter dem Tor'],
+ ex:'Der Bumper steht im Überzahlaufbau in der Mitte. Er ist für schnelle Pässe und Schüsse aus dem Slot da. In Unterzahl kontrolliert unser F2 die Mitte und den Bumper.',
+ solve:[{t:500,m:{},hl:[200,215,26],txt:'Bumper (hier: C)'},{t:550,m:{P:'C'},txt:'Pass in die Mitte'},{t:450,m:{P:[196,346]},hl:0,txt:'Schuss!'}]},
+
+{id:'b-19',chap:'Forecheck & Backcheck',lvl:'U17',rink:'zone',label:OZ,
+ setup:SO({F1:[200,200],F2:[300,140],F3:[100,140],D1:[100,60],D2:[300,60],gD1:[200,390],gD2:[110,385],gF1:[370,260],gF2:[30,260],P:[208,396]}),intro:I0,
+ q:'Was ist „Forechecking“?',
+ o:['Druck auf den Gegner in seiner eigenen Zone, um die Scheibe schnell zurückzugewinnen','Das Aufwärmen vor dem Spiel','Zurückfahren in die eigene Zone','Ein Schuss direkt von vorne'],
+ ex:'Beim Forechecking setzen wir den Gegner in seiner Zone unter Druck, damit er nicht aufbauen kann. Im 1-2-2 jagt F1, F2 liest und unterstützt, F3 macht die Bande zu und sichert ab.',
+ solve:[{t:900,m:{F1:[225,372],F2:[255,250],F3:[90,240]},txt:'F1 jagt'},{t:600,m:{P:'gD2'},txt:'Gegner muss schnell passen'},{t:700,m:{F3:[115,350],F2:[180,300]},hl:[112,370,32],txt:'F3 macht zu – Druck'}]},
+
+{id:'b-20',chap:'Forecheck & Backcheck',lvl:'U17',rink:'full',
+ setup:{T:[52,150],gT:[548,150],F1:[440,150],F2:[365,95],F3:[365,205],D1:[255,115],D2:[255,185],gD1:[578,165],gD2:[520,60],gF1:[470,240],P:[586,170]},intro:I0,
+ q:'Was ist eine „Trap“?',
+ o:['Abwartendes Forechecking: Wir stehen in der neutralen Zone, verteidigen die rote Linie und lenken den Gegner an die Bande','Ein Foul mit dem Schläger','Wenn der Torwart den Puck festhält','Ein Pass durch die Beine'],
+ ex:'Die Trap (1-2-2) spielen wir, wenn der Gegner hinter seinem Tor volle Kontrolle hat. Wir verteidigen die rote Linie, F1 teilt das Eis und winkelt an, der Spieler auf der Scheibenseite attackiert den Pass, die anderen sichern ab.',
+ solve:[{t:1100,m:{gD1:[495,240],P:'gD1',F1:[470,200]},txt:'F1 winkelt an – Richtung Bande'},{t:700,m:{P:'gF1'},txt:'Pass an die Bande …'},{t:700,m:{F3:[455,248]},hl:[465,245,30],txt:'… F3 attackiert'}]},
+
+{id:'b-21',chap:'Forecheck & Backcheck',lvl:'U17',rink:'zone',label:OZ,
+ setup:SO({D1:[100,62],D2:[300,62],F1:[205,300],F2:[150,250],F3:[230,160],gD1:[250,340],gD2:[150,330],gF1:[355,210],P:[390,330]}),intro:I0,
+ q:'Was bedeutet „Pinchen“?',
+ o:['Der Verteidiger rückt von der blauen Linie an der Bande nach vorne, um die Scheibe in der Zone zu halten','Den Gegner kneifen','Den Schläger kürzen','Der Torwart verlässt sein Tor'],
+ ex:'Beim Pinch rückt der Verteidiger an der Bande nach vorne und hält die Scheibe in der Angriffszone. Wichtig: Ein Stürmer (z. B. F3) sichert dann die blaue Linie ab.',
+ solve:[{t:700,m:{P:[386,200],gF1:[365,190]},txt:'Scheibe kommt an der Bande hoch'},{t:700,m:{D2:[372,182],P:[380,186],F3:[300,64]},hl:[372,182,28],txt:'D2 pincht – F3 sichert die blaue Linie'}]},
+
+{id:'b-22',chap:'Forecheck & Backcheck',lvl:'U17',rink:'full',
+ setup:{T:[52,150],gT:[548,150],D1:[330,150],D2:[300,215],gF1:[420,150],gF2:[430,230],P:[410,156]},intro:I0,
+ q:'Was ist die „Gap“?',
+ o:['Der Abstand zwischen Verteidiger und angreifendem Gegner','Die Lücke im Tor','Eine Pause im Spiel','Der Abstand zwischen zwei Reihenwechseln'],
+ ex:'Die Gap ist der Abstand zwischen Verteidiger und Gegner. Eine gute Gap ist klein: Der Verteidiger bleibt nah dran, damit der Gegner keine Zeit und keinen Raum hat.',
+ solve:[{t:1500,m:{gF1:[250,150],P:[240,156],D1:[200,150],gF2:[260,230],D2:[205,220]},hl:[225,150,40],txt:'Gute Gap: nah dran bleiben'}]}
+];
+
+const $=id=>document.getElementById(id);
 const NS='http://www.w3.org/2000/svg';
 let pos={},els={},token=0,order=[],idx=0,answers={},cur=null,shuffled=[];
 
@@ -403,14 +567,14 @@ function setPos(k,p){pos[k]=p;els[k].setAttribute('transform',`translate(${p[0]}
 function build(q){
   const r=RINK[q.rink],svg=$('rink');
   svg.setAttribute('viewBox',r.vb);
-  svg.innerHTML=r.svg+'<g id="hl"></g><g id="ents"></g>';
+  svg.innerHTML=(q.label?r.svg.replace('>unser Tor<','>'+q.label+'<'):r.svg)+'<g id="hl"></g><g id="ents"></g>';
   pos={};els={};ang={};curA={};stickOn=q.rink==='zone';
   const keys=Object.keys(q.setup).sort((a,b)=>(a==='P')-(b==='P')||(b[0]==='g')-(a[0]==='g'));
   keys.forEach(k=>{els[k]=mkEnt(k);$('ents').appendChild(els[k]);setPos(k,q.setup[k]);if(q.setup[k][2]!=null)ang[k]=q.setup[k][2]});
   drawSticks();
   hl(null);banner('');
 }
-function hl(h){const g=$('hl');if(!g)return;g.innerHTML=h?`<circle class="hlring" cx="${h[0]}" cy="${h[1]}" r="${h[2]}"/>`:''}
+function hl(h){const g=$('hl');if(!g)return;g.innerHTML=!h?'':h.d?`<path class="${h.line?'hlline':'hlarea'}" d="${h.d}"/>`:`<circle class="hlring" cx="${h[0]}" cy="${h[1]}" r="${h[2]}"/>`}
 function banner(t){const b=$('banner');if(t){b.textContent=t;b.classList.add('on')}else b.classList.remove('on')}
 function targets(s){
   const tg={};for(const k in s.m){if(k!=='P'||typeof s.m.P!=='string')tg[k]=s.m[k]}
@@ -436,8 +600,12 @@ async function play(steps,tk){
 function jump(steps){steps.forEach(s=>{const tg=targets(s);for(const k in tg){setPos(k,tg[k]);if(tg[k].length>2)ang[k]=tg[k][2]}});drawSticks()}
 
 
-const CH='k1';
-const $=id=>document.getElementById(id);
+const CHAPTERS=[
+ {id:'k1',title:'Kapitel 1',sub:'Defensive Zone · Aufbau · Bully · Regelkunde',lvl:'U13+',qs:QS1},
+ {id:'beg',title:'Eishockey-Begriffe',sub:'Die Begriffe aus dem Playbook – mit Animation',lvl:'U13–U17',qs:QSB}
+];
+let CH='k1',QS=QS1,CHAP=CHAPTERS[0];
+function setChapter(id){CHAP=CHAPTERS.find(c=>c.id===id)||CHAPTERS[0];CH=CHAP.id;QS=CHAP.qs}
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const CODECH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const randCode=n=>Array.from({length:n},()=>CODECH[Math.floor(Math.random()*CODECH.length)]).join('');
@@ -467,15 +635,14 @@ function supaAPI(cfg){
       const d=chk(await sb.rpc('me'));meCache=d&&d[0]||null;return meCache},
     async hasSession(){const {data:s}=await sb.auth.getSession();return !!s.session},
     async signOut(){await sb.auth.signOut();meCache=null},
-    async loadProgress(){return chk(await sb.from('progress').select('question_id,ok,choice').eq('member_id',meCache.id).eq('chapter',CH))},
+    async loadProgress(){return chk(await sb.from('progress').select('chapter,question_id,ok,choice').eq('member_id',meCache.id))},
     async saveAnswer(qid,ok,choice){chk(await sb.from('progress').upsert({member_id:meCache.id,chapter:CH,question_id:qid,ok,choice,answered_at:new Date().toISOString()}))},
     async resetProgress(){chk(await sb.from('progress').delete().eq('member_id',meCache.id).eq('chapter',CH))},
     async saveAttempt(score,total){chk(await sb.from('attempts').insert({member_id:meCache.id,chapter:CH,score,total}))},
-    async best(){const d=chk(await sb.from('attempts').select('score,total').eq('member_id',meCache.id).eq('chapter',CH));
-      return d.length?Math.max(...d.map(a=>Math.round(a.score/a.total*100))):null},
+    async bestAll(){return bestMap(chk(await sb.from('attempts').select('chapter,score,total').eq('member_id',meCache.id)))},
     async teams(){return chk(await sb.from('teams').select('id,name,code').order('name'))},
     async members(teamId){return chk(await sb.from('members').select('id,display_name,role,user_id,progress(question_id,ok,chapter),attempts(score,total,chapter)').eq('team_id',teamId).order('display_name'))
-      .map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.user_id,progress:(m.progress||[]).filter(p=>p.chapter===CH),best:bestOf(m.attempts)}))},
+      .map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.user_id,progress:m.progress||[],best:bestMap(m.attempts)}))},
     async addMembers(teamId,names,role){chk(await sb.from('members').insert(names.map(n=>({team_id:teamId,display_name:n,role}))))},
     async removeMember(id){chk(await sb.from('members').delete().eq('id',id))},
     async resetLogin(id){if(!chk(await sb.rpc('reset_login',{p_member:id})))throw new Error('Keine Berechtigung.')},
@@ -484,7 +651,7 @@ function supaAPI(cfg){
     async newCode(team){const code=team.code.split('-')[0]+'-'+randCode(4);chk(await sb.from('teams').update({code}).eq('id',team.id));return code}
   };
 }
-function bestOf(att){const a=(att||[]).filter(x=>x.chapter===CH);return a.length?Math.max(...a.map(x=>Math.round(x.score/x.total*100))):null}
+function bestMap(att){const r={};(att||[]).forEach(x=>{const p=Math.round(x.score/x.total*100);if(r[x.chapter]==null||p>r[x.chapter])r[x.chapter]=p});return r}
 
 /* ================= Backend: Demo (lokal) ================= */
 function mockAPI(){
@@ -504,13 +671,13 @@ function mockAPI(){
     async me(){const m=meM();if(!m)return null;const t=db.teams.find(t=>t.id===m.team_id);return {id:m.id,display_name:m.display_name,role:m.role,team_id:m.team_id,team_name:t.name}},
     async hasSession(){return !!db.session},
     async signOut(){db.session=null;save()},
-    async loadProgress(){return db.progress.filter(p=>p.member_id===db.session&&p.chapter===CH)},
+    async loadProgress(){return db.progress.filter(p=>p.member_id===db.session)},
     async saveAnswer(qid,ok,choice){db.progress=db.progress.filter(p=>!(p.member_id===db.session&&p.chapter===CH&&p.question_id===qid));db.progress.push({member_id:db.session,chapter:CH,question_id:qid,ok,choice});save()},
     async resetProgress(){db.progress=db.progress.filter(p=>!(p.member_id===db.session&&p.chapter===CH));save()},
     async saveAttempt(score,total){db.attempts.push({member_id:db.session,chapter:CH,score,total});save()},
-    async best(){return bestOf(db.attempts.filter(a=>a.member_id===db.session))},
+    async bestAll(){return bestMap(db.attempts.filter(a=>a.member_id===db.session))},
     async teams(){const m=meM();return db.teams.filter(t=>m.role==='admin'||t.id===m.team_id).sort((a,b)=>a.name.localeCompare(b.name))},
-    async members(tid){return db.members.filter(m=>m.team_id===tid).sort((a,b)=>a.display_name.localeCompare(b.display_name)).map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.pw,progress:db.progress.filter(p=>p.member_id===m.id&&p.chapter===CH),best:bestOf(db.attempts.filter(a=>a.member_id===m.id))}))},
+    async members(tid){return db.members.filter(m=>m.team_id===tid).sort((a,b)=>a.display_name.localeCompare(b.display_name)).map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.pw,progress:db.progress.filter(p=>p.member_id===m.id),best:bestMap(db.attempts.filter(a=>a.member_id===m.id))}))},
     async addMembers(tid,names,role){names.forEach(n=>db.members.push({id:uid(),team_id:tid,display_name:n,role}));save()},
     async removeMember(id){db.members=db.members.filter(m=>m.id!==id);db.progress=db.progress.filter(p=>p.member_id!==id);save()},
     async resetLogin(id){const m=db.members.find(x=>x.id===id);delete m.pw;save()},
@@ -585,25 +752,32 @@ async function enter(){
 $('logout').onclick=async()=>{await API.signOut();ME=null;toLogin()};
 
 /* ================= Fortschritt ================= */
-let full=true;
-const ALL=QS.map((q,i)=>i);
-const qIndex=Object.fromEntries(QS.map((q,i)=>[q.id,i]));
-async function loadAnswers(){answers={};try{(await API.loadProgress()).forEach(p=>{if(p.question_id in qIndex)answers[qIndex[p.question_id]]={ok:p.ok,oi:p.choice}})}catch(e){}}
+let full=true,ALLP={},BEST={};
+async function loadAnswers(){ALLP={};CHAPTERS.forEach(c=>ALLP[c.id]={});
+  try{(await API.loadProgress()).forEach(p=>{const c=CHAPTERS.find(c=>c.id===p.chapter);if(!c)return;const i=c.qs.findIndex(q=>q.id===p.question_id);if(i>=0)ALLP[c.id][i]={ok:p.ok,oi:p.choice}})}catch(e){}
+  answers=ALLP[CH]}
 async function home(){
   show('home');
   $('hello').textContent='Hallo '+ME.display_name.split(' ')[0]+'!';$('hteam').textContent=ME.team_name.toUpperCase();
-  const n=Object.keys(answers).length,right=Object.values(answers).filter(a=>a.ok).length,pct=Math.round(n/QS.length*100);
-  $('hdone').textContent=n?`${n} von ${QS.length} beantwortet · ${right} richtig`:'Noch nicht begonnen';
-  $('hpct').textContent=pct+' %';$('hbar').style.width=pct+'%';
-  $('hstart').textContent=n===0?'Starten':n<QS.length?'Weitermachen':'Ergebnis ansehen';
-  $('hfresh').classList.toggle('hide',n===0);
   $('htrainer').classList.toggle('hide',ME.role==='player');
-  $('hbest').textContent='';
-  try{const b=await API.best();if(b!=null)$('hbest').textContent=`Bestes Ergebnis: ${b} %`}catch(e){}
+  try{BEST=await API.bestAll()}catch(e){BEST={}}
+  $('chapters').innerHTML='';
+  CHAPTERS.forEach(c=>{const ans=ALLP[c.id]||{},n=Object.keys(ans).length,right=Object.values(ans).filter(a=>a.ok).length,pct=Math.round(n/c.qs.length*100);
+    const d=document.createElement('div');d.className='card';d.style.marginBottom='14px';
+    d.innerHTML=`<div class="row" style="justify-content:space-between"><span class="cond" style="font-size:22px;font-weight:700">${esc(c.title)}</span><span class="tag lvl">${esc(c.lvl)}</span></div>
+    <div class="muted" style="font-size:15px;margin:2px 0 10px">${esc(c.sub)} · ${c.qs.length} Fragen</div>
+    <div style="display:flex;justify-content:space-between;font-weight:600;font-size:15px"><span>${n?`${n} von ${c.qs.length} beantwortet · ${right} richtig`:'Noch nicht begonnen'}</span><span>${pct} %</span></div>
+    <div class="bar" style="margin:6px 0 12px"><i style="width:${pct}%"></i></div>
+    <div class="row"><button class="btn yel" data-a="go">${n===0?'Starten':n<c.qs.length?'Weitermachen':'Ergebnis ansehen'}</button>${n?'<button class="btn" data-a="fresh">Von vorne</button>':''}</div>
+    ${BEST[c.id]!=null?`<div class="muted" style="font-size:14px;margin-top:10px">Bestes Ergebnis: ${BEST[c.id]} %</div>`:''}`;
+    d.querySelector('[data-a=go]').onclick=()=>{setChapter(c.id);answers=ALLP[c.id];
+      if(Object.keys(answers).length===c.qs.length){order=c.qs.map((q,i)=>i);full=true;result();return}
+      startRun(c.qs.map((q,i)=>i),true)};
+    const fr=d.querySelector('[data-a=fresh]');
+    if(fr)fr.onclick=async()=>{if(!await ask2(`„${c.title}“ von vorne beginnen? Deine bisherigen Antworten in diesem Kapitel werden gelöscht.`,'Von vorne'))return;
+      setChapter(c.id);try{await API.resetProgress()}catch(e){}ALLP[c.id]={};answers=ALLP[c.id];startRun(c.qs.map((q,i)=>i),true)};
+    $('chapters').appendChild(d)});
 }
-$('hstart').onclick=()=>{const n=Object.keys(answers).length;if(n===QS.length){order=ALL;full=true;result();return}startRun(ALL,true)};
-$('hfresh').onclick=async()=>{if(!await ask2('Kapitel 1 von vorne beginnen? Deine bisherigen Antworten werden gelöscht.','Von vorne'))return;
-  try{await API.resetProgress()}catch(e){}answers={};startRun(ALL,true)};
 
 /* ================= Quiz ================= */
 function doneCount(){return order.filter(i=>answers[i]).length}
@@ -669,7 +843,8 @@ function result(save){
 $('toHome').onclick=()=>home();
 
 /* ================= Trainerbereich ================= */
-let TEAMS=[],TEAM=null;
+let TEAMS=[],TEAM=null,TCH='k1';
+const tChap=()=>CHAPTERS.find(c=>c.id===TCH);
 $('htrainer').onclick=()=>openTrainer();
 $('tback').onclick=()=>home();
 async function openTrainer(){
@@ -678,9 +853,11 @@ async function openTrainer(){
   $('trole').textContent=ME.role==='admin'?'Admin':'Trainer';
   TEAMS=await API.teams();
   if(!TEAM||!TEAMS.find(t=>t.id===TEAM.id))TEAM=TEAMS.find(t=>t.id!==ME.team_id||ME.role!=='admin')||TEAMS[0];
+  $('tchap').innerHTML=CHAPTERS.map(c=>`<option value="${c.id}">${esc(c.title)}</option>`).join('');$('tchap').value=TCH;
   renderTeams();await renderTeam();
 }
 function renderTeams(){$('tsel').innerHTML=TEAMS.map(t=>`<option value="${t.id}"${TEAM&&t.id===TEAM.id?' selected':''}>${esc(t.name)}</option>`).join('')}
+$('tchap').onchange=async()=>{TCH=$('tchap').value;await renderTeam()};
 $('tsel').onchange=async()=>{TEAM=TEAMS.find(t=>t.id===$('tsel').value);await renderTeam()};
 async function renderTeam(){
   if(!TEAM){$('tlist').innerHTML='<p class="muted">Noch keine Mannschaft.</p>';return}
@@ -691,11 +868,11 @@ async function renderTeam(){
   $('tcount').textContent=`${players.length} Spieler · ${players.filter(m=>m.claimed).length} angemeldet`;
   $('tlist').innerHTML=ms.length?'':'<p class="muted" style="margin:10px 0 0">Noch niemand angelegt.</p>';
   ms.forEach(m=>{
-    const n=m.progress.length,r=m.progress.filter(p=>p.ok).length,pct=Math.round(n/QS.length*100);
+    const pr=m.progress.filter(p=>p.chapter===TCH),n=pr.length,r=pr.filter(p=>p.ok).length,pct=Math.round(n/tChap().qs.length*100),bst=m.best[TCH];
     const canEdit=ME.role==='admin'||m.role==='player';const self=m.id===ME.id;
     const d=document.createElement('div');d.className='mrow';
     d.innerHTML=`<div class="who"><b>${esc(m.name)}${m.role!=='player'?` <span class="tag" style="font-size:11px">${m.role==='admin'?'Admin':'Trainer'}</span>`:''}</b>
-      <span>${m.claimed?`${pct} % geschafft · ${r}/${n} richtig${m.best!=null?` · Bestes: ${m.best} %`:''}`:'noch nicht angemeldet'}</span>
+      <span>${m.claimed?`${pct} % geschafft · ${r}/${n} richtig${bst!=null?` · Bestes: ${bst} %`:''}`:'noch nicht angemeldet'}</span>
       <div class="minibar"><i style="width:${pct}%"></i></div></div>
       <div class="acts">${canEdit&&!self&&m.claimed?'<button class="btn small" data-a="reset">Passwort</button>':''}${canEdit&&!self?'<button class="btn small" data-a="del">Entfernen</button>':''}</div>`;
     d.querySelectorAll('[data-a]').forEach(b=>b.onclick=async()=>{
@@ -708,7 +885,7 @@ async function renderTeam(){
   renderStats(ms.filter(m=>m.role==='player'));
 }
 function renderStats(ms){
-  const rows=QS.map((q,i)=>{const ps=ms.flatMap(m=>m.progress.filter(p=>p.question_id===q.id));
+  const rows=tChap().qs.map((q,i)=>{const ps=ms.flatMap(m=>m.progress.filter(p=>p.chapter===TCH&&p.question_id===q.id));
     const ok=ps.filter(p=>p.ok).length;return {i,q,n:ps.length,pct:ps.length?Math.round(ok/ps.length*100):null}});
   if(!rows.some(r=>r.n)){$('tstats').innerHTML='<p class="muted" style="margin:0;font-size:14px">Noch keine Antworten.</p>';return}
   rows.sort((a,b)=>(a.pct??101)-(b.pct??101));

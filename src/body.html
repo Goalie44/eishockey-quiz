@@ -41,15 +41,8 @@
 <section id="home" class="hide">
   <div class="row" style="justify-content:space-between;margin-bottom:6px"><span class="cond muted" style="font-size:15px;font-weight:600" id="hteam"></span><button class="btn small" id="logout">Abmelden</button></div>
   <h1 id="hello"></h1>
-  <div class="card" style="margin:12px 0 14px">
-    <div class="row" style="justify-content:space-between"><span class="cond" style="font-size:22px;font-weight:700">Kapitel 1</span><span class="tag lvl">U13+</span></div>
-    <div class="muted" style="font-size:15px;margin:2px 0 10px">Defensive Zone · Aufbau · Bully · Regelkunde · 13 Fragen</div>
-    <div style="display:flex;justify-content:space-between;font-weight:600;font-size:15px"><span id="hdone"></span><span id="hpct"></span></div>
-    <div class="bar" style="margin:6px 0 12px"><i id="hbar" style="width:0"></i></div>
-    <div class="row"><button class="btn yel" id="hstart">Starten</button><button class="btn hide" id="hfresh">Von vorne</button></div>
-    <div class="muted" id="hbest" style="font-size:14px;margin-top:10px"></div>
-  </div>
-  <div class="card muted" style="margin-bottom:14px;font-size:15px">Weitere Kapitel (Rush, offensive Zone, Special Teams, Forecheck …) folgen.</div>
+  <div id="chapters" style="margin-top:12px"></div>
+  <div class="card muted" style="margin-bottom:14px;font-size:15px">Weitere Kapitel (Aufbau, Rush, offensive Zone, Special Teams, Forecheck …) folgen.</div>
   <div class="legend"><span><span class="dot" style="background:var(--ink);border:2px solid var(--yel)"></span>Dein Team</span><span><span class="dot" style="background:var(--red)"></span>Gegner</span><span><span class="dot" style="background:var(--ink)"></span>Puck</span></div>
   <button class="btn primary full hide" id="htrainer" style="margin-top:16px">Trainerbereich</button>
 </section>
@@ -103,6 +96,8 @@
   </div>
 
   <div class="card" style="margin-bottom:14px">
+    <label class="lbl" for="tchap">Kapitel (für Fortschritt und Auswertung)</label>
+    <select id="tchap" class="inp"></select>
     <div class="row" style="justify-content:space-between"><strong>Spieler und Trainer</strong><span class="muted" id="tcount" style="font-size:14px"></span></div>
     <div id="tlist"></div>
   </div>
@@ -119,7 +114,7 @@
   </div>
 
   <div class="card" style="margin-bottom:14px">
-    <strong>Fragen-Auswertung (Kapitel 1)</strong>
+    <strong>Fragen-Auswertung</strong>
     <p class="muted" style="font-size:14px;margin:4px 0 8px">Wie viele der Antworten waren richtig – so siehst du, was du im Training nochmal aufgreifen solltest.</p>
     <div id="tstats"></div>
   </div>
