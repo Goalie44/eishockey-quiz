@@ -7,6 +7,6 @@ html=head+css+"\nbody{padding-bottom:env(safe-area-inset-bottom)}\n</style>\n</h
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-"""+open('src/data_k1.js').read()+open('src/data_beg.js').read()+"\nconst $=id=>document.getElementById(id);\n"+open('src/engine.js').read()+open('src/app.js').read().replace("const $=id=>document.getElementById(id);\n","",1)+"</script>\n</body>\n</html>\n"
+"""+open('src/data_k1.js').read()+open('src/data_beg.js').read()+open('src/data_reg.js').read()+"\nconst $=id=>document.getElementById(id);\n"+open('src/engine.js').read()+open('src/app.js').read().replace("const $=id=>document.getElementById(id);\n","",1)+"</script>\n</body>\n</html>\n"
 open('index.html','w').write(html)
 print('ok',len(html))

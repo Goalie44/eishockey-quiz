@@ -1,6 +1,7 @@
 const CHAPTERS=[
  {id:'k1',title:'Kapitel 1',sub:'Defensive Zone · Aufbau · Bully · Regelkunde',lvl:'U13+',qs:QS1},
- {id:'beg',title:'Eishockey-Begriffe',sub:'Die Begriffe aus dem Playbook – mit Animation',lvl:'U13–U17',qs:QSB}
+ {id:'beg',title:'Eishockey-Begriffe',sub:'Die Begriffe aus dem Playbook – mit Animation',lvl:'U13–U17',qs:QSB},
+ {id:'reg',title:'Regelkunde',sub:'Torwart, Strafen, Bully, Icing, Abseits, Ausrüstung',lvl:'U13+',qs:QSR}
 ];
 let CH='k1',QS=QS1,CHAP=CHAPTERS[0];
 function setChapter(id){CHAP=CHAPTERS.find(c=>c.id===id)||CHAPTERS[0];CH=CHAP.id;QS=CHAP.qs}
