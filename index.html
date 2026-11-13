@@ -144,6 +144,10 @@ body.wide .demo{display:none}
 .foldhint::after{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin-top:-4px;transition:transform .2s}
 .fold[open] .foldhint{font-size:0}.fold[open] .foldhint::after{transform:rotate(-135deg);margin-top:4px}
 
+.btn.danger{color:#c62828;border-color:#e6b3b3;background:#fff}
+.btn.danger:hover{background:#fdecec}
+#mtext{white-space:pre-line}
+
 body{padding-bottom:env(safe-area-inset-bottom)}
 </style>
 </head>
@@ -238,6 +242,7 @@ body{padding-bottom:env(safe-area-inset-bottom)}
       <span class="row" style="gap:6px"><button class="btn small" id="tcopy">Kopieren</button><button class="btn small adminonly" id="tnewcode">Code ändern</button></span>
     </div>
     <div class="muted" id="tcopymsg" style="font-size:13px;margin-top:6px"></div>
+    <div class="adminonly" style="margin-top:10px;text-align:right"><button class="btn small danger" id="tdelteam">Mannschaft löschen</button></div>
     <div id="tshare" class="hide" style="margin-top:10px">
       <textarea id="tsharetxt" class="inp" rows="5" readonly></textarea>
       <div class="row"><a class="btn yel" id="twa" target="_blank" rel="noopener">Per WhatsApp senden</a><button class="btn small" id="tsys">Teilen …</button></div>
@@ -867,7 +872,8 @@ function supaAPI(cfg){
     async setCode(team,code){const r=await sb.from('teams').update({code}).eq('id',team.id);if(r.error)throw new Error(r.error.message.includes('duplicate')?'Diesen Code gibt es schon.':r.error.message);return code},
     async createTeam(name,own){const code=own||(name.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,6)||'TEAM')+'-'+randCode(4);
       return chk(await sb.from('teams').insert({name,code}).select('id,name,code').single())},
-    async newCode(team){const code=team.code.split('-')[0]+'-'+randCode(4);chk(await sb.from('teams').update({code}).eq('id',team.id));return code}
+    async newCode(team){const code=team.code.split('-')[0]+'-'+randCode(4);chk(await sb.from('teams').update({code}).eq('id',team.id));return code},
+    async deleteTeam(team){const r=await sb.rpc('delete_team',{p_team:team.id});if(r.error)throw new Error(r.error.message.includes('delete_team')?'Das Datenbank-Update fehlt noch.':r.error.message);if(!r.data)throw new Error('Diese Mannschaft kann nicht gelöscht werden.')}
   };
 }
 function bestMap(att){const r={};(att||[]).forEach(x=>{const p=Math.round(x.score/x.total*100);if(r[x.chapter]==null||p>r[x.chapter])r[x.chapter]=p});return r}
@@ -904,7 +910,8 @@ function mockAPI(){
     async resetLogin(id){const m=db.members.find(x=>x.id===id);delete m.pw;save()},
     async setCode(team,code){if(db.teams.some(x=>x.id!==team.id&&x.code.toUpperCase()===code.toUpperCase()))throw new Error('Diesen Code gibt es schon.');db.teams.find(x=>x.id===team.id).code=code;save();return code},
     async createTeam(name,own){if(own&&db.teams.some(x=>x.code.toUpperCase()===own.toUpperCase()))throw new Error('Diesen Code gibt es schon.');const t={id:uid(),name,code:own||(name.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,6)||'TEAM')+'-'+randCode(4)};db.teams.push(t);save();return t},
-    async newCode(team){const t=db.teams.find(x=>x.id===team.id);t.code=t.code.split('-')[0]+'-'+randCode(4);save();return t.code}
+    async newCode(team){const t=db.teams.find(x=>x.id===team.id);t.code=t.code.split('-')[0]+'-'+randCode(4);save();return t.code},
+    async deleteTeam(team){const ids=db.members.filter(m=>m.team_id===team.id).map(m=>m.id);db.members=db.members.filter(m=>m.team_id!==team.id);db.progress=db.progress.filter(p=>!ids.includes(p.member_id));db.teams=db.teams.filter(t=>t.id!==team.id);save()}
   };
 }
 
@@ -929,6 +936,12 @@ function askCode(text,val){return new Promise(r=>{const i=$('minput');$('mchecks
   $('myes').onclick=()=>{const c=i.value.trim();const e=codeErr(c);if(e){$('merr').textContent=e;return}done(c)};
   i.onkeydown=e=>{if(e.key==='Enter')$('myes').click()};
   $('mno').onclick=()=>done(null)})}
+function askName(text,name){return new Promise(r=>{const i=$('minput');$('mchecks').classList.add('hide');$('mtext').textContent=text;$('myes').textContent='Endgültig löschen';$('merr').textContent='';i.value='';i.placeholder=name;i.autocapitalize='off';i.classList.remove('hide');$('modal').classList.remove('hide');setTimeout(()=>i.focus(),50);
+  const done=v=>{$('modal').classList.add('hide');i.classList.add('hide');i.placeholder='';i.autocapitalize='characters';r(v)};
+  i.oninput=()=>{$('merr').textContent=''};
+  $('myes').onclick=()=>{if(i.value.trim().toLowerCase()!==name.trim().toLowerCase()){$('merr').textContent='Der Name stimmt nicht.';return}done(true)};
+  i.onkeydown=e=>{if(e.key==='Enter')$('myes').click()};
+  $('mno').onclick=()=>done(false)})}
 function askChapters(text,checked){return new Promise(r=>{const box=$('mchecks');$('mtext').textContent=text;$('myes').textContent='Speichern';$('merr').textContent='';
   box.innerHTML=CHAPTERS.map(c=>`<label class="chk"><input type="checkbox" value="${c.id}"${checked.includes(c.id)?' checked':''}> <span>${esc(c.title)} <small class="muted">${esc(c.lvl)}</small></span></label>`).join('');
   box.classList.remove('hide');$('modal').classList.remove('hide');
@@ -1113,6 +1126,7 @@ $('tsel').onchange=async()=>{TEAM=TEAMS.find(t=>t.id===$('tsel').value);await re
 async function renderTeam(){
   if(!TEAM){$('tlist').innerHTML='<p class="muted">Noch keine Mannschaft.</p>';return}
   $('tcode').textContent=TEAM.code;$('tcopymsg').textContent='';$('tshare').classList.add('hide');
+  $('tdelteam').classList.toggle('hide',TEAM.id===ME.team_id||TEAM.name.trim().toLowerCase()==='trainer');
   $('tlist').innerHTML='<p class="muted">Lädt …</p>';
   renderTeamChapters();
   const ms=await API.members(TEAM.id);
@@ -1167,6 +1181,11 @@ $('tnewcode').onclick=async()=>{
   if(!c||c===TEAM.code)return;
   if(TEAMS.some(t=>t.id!==TEAM.id&&t.code.toUpperCase()===c.toUpperCase())){await ask2('Diesen Code hat schon eine andere Mannschaft.');return}
   try{TEAM.code=await API.setCode(TEAM,c);$('tcode').textContent=TEAM.code;$('tshare').classList.add('hide');$('tcopymsg').textContent='Code geändert.'}catch(e){await ask2('Das hat nicht geklappt: '+e.message)}};
+$('tdelteam').onclick=async()=>{const t=TEAM;if(!t)return;
+  const ok=await askName(`Mannschaft „${t.name}“ wirklich löschen? Alle Spieler und Trainer dieser Mannschaft, ihre Logins und ihr Fortschritt werden mitgelöscht. Das kann man nicht rückgängig machen.\n\nZur Bestätigung den Namen der Mannschaft eintippen:`,t.name);
+  if(!ok)return;
+  try{await API.deleteTeam(t);TEAMS=await API.teams();TEAM=TEAMS.find(x=>x.id!==ME.team_id)||TEAMS[0]||null;renderTeams();await renderTeam();await ask2(`Mannschaft „${t.name}“ wurde gelöscht.`)}
+  catch(e){await ask2('Das hat nicht geklappt: '+e.message)}};
 $('tadd').onclick=async()=>{
   const names=[...new Set($('tnames').value.split('\n').map(s=>s.trim().replace(/\s+/g,' ')).filter(Boolean))];$('tadderr').textContent='';
   if(!names.length){$('tadderr').textContent='Trag mindestens einen Namen ein.';return}

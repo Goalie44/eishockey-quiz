@@ -80,3 +80,7 @@ body.wide .demo{display:none}
 .foldhint{font-size:14px;color:var(--muted);display:flex;align-items:center;gap:6px}
 .foldhint::after{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin-top:-4px;transition:transform .2s}
 .fold[open] .foldhint{font-size:0}.fold[open] .foldhint::after{transform:rotate(-135deg);margin-top:4px}
+
+.btn.danger{color:#c62828;border-color:#e6b3b3;background:#fff}
+.btn.danger:hover{background:#fdecec}
+#mtext{white-space:pre-line}
