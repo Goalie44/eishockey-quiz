@@ -148,6 +148,30 @@ body.wide .demo{display:none}
 .btn.danger:hover{background:#fdecec}
 #mtext{white-space:pre-line}
 
+.mrow .who.click{cursor:pointer}
+.pview{align-items:stretch;padding:12px}
+.pvbox{max-width:640px;width:100%;margin:auto;max-height:100%;display:flex;flex-direction:column;padding:16px}
+.pvhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;position:relative}
+.pvhead .sx{position:static;flex:none}
+#pvbody{overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
+.pvsum{display:grid;gap:8px}
+.pvch{display:block;text-align:left;width:100%;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;font:inherit;color:inherit;cursor:pointer}
+.pvch.on{border-color:var(--ink);box-shadow:inset 4px 0 0 var(--yel)}
+.pvch .pvt{display:block;font-weight:600}
+.pvch .pvn{display:block;font-size:13px;color:var(--muted)}
+.badtxt{color:#c62828;font-weight:600}
+.pvrow{display:grid;grid-template-columns:28px 1fr;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.pvrow:last-child{border-bottom:0}
+.pvic{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;background:#eef1f4;color:#7a8594}
+.pvrow.ok .pvic{background:#e3f4ec;color:#1D7A55}
+.pvrow.bad .pvic{background:#fdecec;color:#c62828}
+.pvans{font-size:13px;margin-top:4px;padding:4px 8px;border-radius:8px}
+.pvans.bad{background:#fdecec;color:#a52020}
+.pvans.ok{background:#e3f4ec;color:#1a6b4a}
+body.noscroll{overflow:hidden}
+@media (min-width:700px){.pvsum{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:560px){.mrow{flex-wrap:wrap;row-gap:8px}.mrow .who{flex:1 1 100%}.mrow .acts{flex:1 1 100%;justify-content:flex-start}}
+
 body{padding-bottom:env(safe-area-inset-bottom)}
 </style>
 </head>
@@ -290,6 +314,8 @@ body{padding-bottom:env(safe-area-inset-bottom)}
   </div>
 </section>
 
+<div id="pview" class="modal pview hide"><div class="card pvbox"><div class="pvhead"><div><h2 id="pvname" style="margin:0"></h2><div class="muted" id="pvmeta" style="font-size:13px"></div></div><button class="sx" id="pvx" aria-label="Schließen">✕</button></div>
+  <div id="pvbody"><p class="muted" style="font-size:13px;margin:10px 0 6px">Kapitel antippen, um die einzelnen Fragen zu sehen.</p><div id="pvsum" class="pvsum"></div><div id="pvqhead" style="margin:14px 0 6px"></div><div id="pvq"></div></div></div></div>
 <div id="sheet" class="sheet hide"><div class="sheetbox" role="dialog" aria-modal="false"><button class="sx" id="sx" aria-label="Erklärung schließen">✕</button><div id="sheetfb"></div><div class="row" style="justify-content:space-between;margin-top:12px"><button class="btn small" id="sreplay">Lösung nochmal</button><button class="btn primary" id="snext">Weiter</button></div></div></div>
 <div id="modal" class="modal hide"><div class="card mbox"><div id="mtext" style="margin-bottom:14px"></div><input id="minput" class="inp hide" autocomplete="off" autocapitalize="characters"><div id="mchecks" class="hide" style="margin-bottom:12px"></div><div class="err" id="merr"></div><div class="row" style="justify-content:flex-end"><button class="btn small" id="mno">Abbrechen</button><button class="btn primary" id="myes">OK</button></div></div></div>
 </div>
@@ -862,10 +888,10 @@ function supaAPI(cfg){
     async teams(){let r=await sb.from('teams').select('id,name,code,chapters').order('name');if(r.error)r=await sb.from('teams').select('id,name,code').order('name');return chk(r)},
     async setTeamChapters(team,list){const ok=chk(await sb.rpc('set_team_chapters',{p_team:team.id,p_chapters:list}));if(!ok)throw new Error('Keine Berechtigung.')},
     async setMemberChapters(id,on,off){chk(await sb.from('members').update({chapters_on:on,chapters_off:off}).eq('id',id))},
-    async members(teamId){const base='id,display_name,role,user_id,progress(question_id,ok,chapter),attempts(score,total,chapter)';
+    async members(teamId){const base='id,display_name,role,user_id,progress(question_id,ok,chapter,choice,answered_at),attempts(score,total,chapter,finished_at)';
       let r=await sb.from('members').select(base+',chapters_on,chapters_off').eq('team_id',teamId).order('display_name');
       if(r.error)r=await sb.from('members').select(base).eq('team_id',teamId).order('display_name');
-      return chk(r).map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.user_id,progress:m.progress||[],best:bestMap(m.attempts),on:m.chapters_on||[],off:m.chapters_off||[]}))},
+      return chk(r).map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.user_id,progress:m.progress||[],attempts:m.attempts||[],best:bestMap(m.attempts),on:m.chapters_on||[],off:m.chapters_off||[]}))},
     async addMembers(teamId,names,role){chk(await sb.from('members').insert(names.map(n=>({team_id:teamId,display_name:n,role}))))},
     async removeMember(id){chk(await sb.from('members').delete().eq('id',id))},
     async resetLogin(id){if(!chk(await sb.rpc('reset_login',{p_member:id})))throw new Error('Keine Berechtigung.')},
@@ -897,12 +923,12 @@ function mockAPI(){
     async hasSession(){return !!db.session},
     async signOut(){db.session=null;save()},
     async loadProgress(){return db.progress.filter(p=>p.member_id===db.session)},
-    async saveAnswer(qid,ok,choice){db.progress=db.progress.filter(p=>!(p.member_id===db.session&&p.chapter===CH&&p.question_id===qid));db.progress.push({member_id:db.session,chapter:CH,question_id:qid,ok,choice});save()},
+    async saveAnswer(qid,ok,choice){db.progress=db.progress.filter(p=>!(p.member_id===db.session&&p.chapter===CH&&p.question_id===qid));db.progress.push({member_id:db.session,chapter:CH,question_id:qid,ok,choice,answered_at:new Date().toISOString()});save()},
     async resetProgress(){db.progress=db.progress.filter(p=>!(p.member_id===db.session&&p.chapter===CH));save()},
-    async saveAttempt(score,total){db.attempts.push({member_id:db.session,chapter:CH,score,total});save()},
+    async saveAttempt(score,total){db.attempts.push({member_id:db.session,chapter:CH,score,total,finished_at:new Date().toISOString()});save()},
     async bestAll(){return bestMap(db.attempts.filter(a=>a.member_id===db.session))},
     async teams(){const m=meM();return db.teams.filter(t=>m.role==='admin'||t.id===m.team_id).sort((a,b)=>a.name.localeCompare(b.name))},
-    async members(tid){return db.members.filter(m=>m.team_id===tid).sort((a,b)=>a.display_name.localeCompare(b.display_name)).map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.pw,progress:db.progress.filter(p=>p.member_id===m.id),best:bestMap(db.attempts.filter(a=>a.member_id===m.id)),on:m.on||[],off:m.off||[]}))},
+    async members(tid){return db.members.filter(m=>m.team_id===tid).sort((a,b)=>a.display_name.localeCompare(b.display_name)).map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.pw,progress:db.progress.filter(p=>p.member_id===m.id),attempts:db.attempts.filter(a=>a.member_id===m.id),best:bestMap(db.attempts.filter(a=>a.member_id===m.id)),on:m.on||[],off:m.off||[]}))},
     async setTeamChapters(team,list){db.teams.find(x=>x.id===team.id).chapters=list;save()},
     async setMemberChapters(id,on,off){const m=db.members.find(x=>x.id===id);m.on=on;m.off=off;save()},
     async addMembers(tid,names,role){names.forEach(n=>db.members.push({id:uid(),team_id:tid,display_name:n,role}));save()},
@@ -1140,8 +1166,10 @@ async function renderTeam(){
     d.innerHTML=`<div class="who"><b>${esc(m.name)}${m.role!=='player'?` <span class="tag" style="font-size:11px">${m.role==='admin'?'Admin':'Trainer'}</span>`:''}</b>
       <span>${m.claimed?`${pct} % geschafft · ${r}/${n} richtig${bst!=null?` · Bestes: ${bst} %`:''}`:'noch nicht angemeldet'}${m.role==='player'&&(m.on.length||m.off.length)?' · <b style="display:inline;font-weight:600">eigene Kapitel</b>':''}</span>
       <div class="minibar"><i style="width:${pct}%"></i></div></div>
-      <div class="acts">${m.role==='player'?'<button class="btn small" data-a="chap">Kapitel</button>':''}${canEdit&&!self&&m.claimed?'<button class="btn small" data-a="reset">Passwort</button>':''}${canEdit&&!self?'<button class="btn small" data-a="del">Entfernen</button>':''}</div>`;
+      <div class="acts">${m.role==='player'?'<button class="btn small yel" data-a="info">Auswertung</button><button class="btn small" data-a="chap">Kapitel</button>':''}${canEdit&&!self&&m.claimed?'<button class="btn small" data-a="reset">Passwort</button>':''}${canEdit&&!self?'<button class="btn small" data-a="del">Entfernen</button>':''}</div>`;
+    if(m.role==='player'){const w=d.querySelector('.who');w.classList.add('click');w.onclick=()=>openPlayer(m)}
     d.querySelectorAll('[data-a]').forEach(b=>b.onclick=async()=>{
+      if(b.dataset.a==='info'){openPlayer(m);return}
       if(b.dataset.a==='chap'){const teamCh=TEAM.chapters||ALLCH();const cur=effChapters(TEAM.chapters,m.on,m.off);
         const sel=await askChapters(`Kapitel für ${m.name}. Abweichungen von der Mannschafts-Einstellung gelten nur für ${m.name}.`,cur);if(!sel)return;
         const on=sel.filter(id=>!teamCh.includes(id)),off=teamCh.filter(id=>!sel.includes(id));
@@ -1153,6 +1181,28 @@ async function renderTeam(){
       renderTeam()});
     $('tlist').appendChild(d)});
   renderStats(ms.filter(m=>m.role==='player'));
+}
+/* ---------- Einzel-Auswertung eines Spielers ---------- */
+let PV=null,PVCH=null;
+const fmtD=d=>{if(!d)return '';const x=new Date(d);return x.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})};
+function openPlayer(m){PV=m;PVCH=TCH;$('pvname').textContent=m.name;renderPlayer();$('pview').classList.remove('hide');document.body.classList.add('noscroll');$('pvbody').scrollTop=0}
+function closePlayer(){$('pview').classList.add('hide');document.body.classList.remove('noscroll')}
+$('pvx').onclick=closePlayer;$('pview').onclick=e=>{if(e.target===$('pview'))closePlayer()};
+function renderPlayer(){const m=PV;const allowed=effChapters(TEAM.chapters,m.on,m.off);
+  const all=[...m.progress.map(p=>p.answered_at),...m.attempts.map(a=>a.finished_at)].filter(Boolean).sort();
+  $('pvmeta').textContent=!m.claimed?'Noch nicht angemeldet.':all.length?`Zuletzt aktiv: ${fmtD(all[all.length-1])}`:'Angemeldet, aber noch keine Frage beantwortet.';
+  $('pvsum').innerHTML=CHAPTERS.map(c=>{const pr=m.progress.filter(p=>p.chapter===c.id),n=pr.length,r=pr.filter(p=>p.ok).length,tot=c.qs.length,at=m.attempts.filter(a=>a.chapter===c.id).length,b=m.best[c.id];const lock=!allowed.includes(c.id);
+    return `<button class="pvch${c.id===PVCH?' on':''}" data-ch="${c.id}"><span class="pvt">${esc(c.title)}${lock?' <small class="muted">(gesperrt)</small>':''}</span>
+      <span class="pvn">${n}/${tot} beantwortet · ${r} richtig${n-r?` · <b class="badtxt">${n-r} falsch</b>`:''}</span>
+      <span class="pvn">${at?`${at}× komplett durchgespielt${b!=null?` · Bestes: ${b} %`:''}`:'noch nicht komplett durchgespielt'}</span>
+      <div class="minibar" style="width:100%;max-width:none"><i style="width:${Math.round(n/tot*100)}%"></i></div></button>`}).join('');
+  $('pvsum').querySelectorAll('[data-ch]').forEach(b=>b.onclick=()=>{PVCH=b.dataset.ch;renderPlayer()});
+  const c=CHAPTERS.find(x=>x.id===PVCH);const map={};m.progress.filter(p=>p.chapter===PVCH).forEach(p=>map[p.question_id]=p);
+  const wrong=c.qs.map((q,i)=>map[q.id]&&!map[q.id].ok?i+1:null).filter(Boolean);
+  $('pvqhead').innerHTML=`<strong>${esc(c.title)} – Fragen im Einzelnen</strong>${wrong.length?`<p class="muted" style="font-size:14px;margin:4px 0 0">Falsch: Frage ${wrong.join(', ')} – das könntest du mit ${esc(m.name)} nochmal anschauen.</p>`:''}`;
+  $('pvq').innerHTML=c.qs.map((q,i)=>{const p=map[q.id];const st=!p?'open':p.ok?'ok':'bad';
+    const pick=p&&!p.ok&&p.choice!=null&&q.o[p.choice]!=null?`<div class="pvans bad">Gewählt: ${esc(q.o[p.choice])}</div><div class="pvans ok">Richtig: ${esc(q.o[0])}</div>`:'';
+    return `<div class="pvrow ${st}"><div class="pvic">${st==='ok'?'✓':st==='bad'?'✗':'–'}</div><div><span class="muted" style="font-size:12px">Frage ${i+1} · ${esc(q.chap)}${p&&p.answered_at?' · '+fmtD(p.answered_at):''}</span><br>${esc(q.q)}${pick}</div></div>`}).join('');
 }
 function renderTeamChapters(){const cur=TEAM.chapters||ALLCH();
   $('tchapsel').innerHTML=CHAPTERS.map(c=>`<label class="chk"><input type="checkbox" value="${c.id}"${cur.includes(c.id)?' checked':''}> <span>${esc(c.title)} <small class="muted">${esc(c.lvl)}</small></span></label>`).join('');
