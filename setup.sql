@@ -229,4 +229,6 @@ grant execute on function public.set_team_chapters(uuid, text[]) to authenticate
 
 
 
+notify pgrst, 'reload schema';
+
 select name as mannschaft, code as dein_trainer_code from public.teams where name = 'Trainer';

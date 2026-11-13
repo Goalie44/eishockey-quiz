@@ -35,4 +35,6 @@ begin
 end $$;
 grant execute on function public.set_team_chapters(uuid, text[]) to authenticated;
 
+notify pgrst, 'reload schema';
+
 select 'Update erfolgreich' as status;
