@@ -592,33 +592,33 @@ const TRAP_OK={areas:[{d:'M162 350L238 350L260 410L140 410Z',c:'#1D9E75',t:'Trap
   {d:'M162 350H8V330A80 80 0 0 0 85 410H140Z',c:'#e0393e',t:'verboten',x:70,y:380}]};
 const CREASE={areas:[{d:'M176 350V337A24 15 0 0 1 224 337V350Z',c:'#e0393e'}]};
 const CREASE_OK={areas:[{d:'M176 350V337A24 15 0 0 1 224 337V350Z',c:'#1D9E75'}]};
-const OVER_RED={areas:[{d:'M300 8H592V292H300Z',c:'#e0393e',t:'hier nicht eingreifen',x:446,y:30}]};
-const OWNZONE={areas:[{d:'M40 8H200V292H40Z',c:'#1D9E75',t:'eigenes Drittel: erlaubt',x:120,y:28}]};
+const OVER_RED={areas:[{d:'M300 7H525A68 68 0 0 1 593 75V225A68 68 0 0 1 525 293H300Z',c:'#e0393e',t:'hier nicht eingreifen',x:446,y:30}]};
+const OWNZONE={areas:[{d:'M200 7H75A68 68 0 0 0 7 75V225A68 68 0 0 0 75 293H200Z',c:'#1D9E75',t:'eigenes Drittel: erlaubt',x:120,y:28}]};
 const RDOTS={areas:[{d:'M462 80a38 38 0 1 0 76 0a38 38 0 1 0 -76 0 M462 220a38 38 0 1 0 76 0a38 38 0 1 0 -76 0',c:'#1D9E75',t:'wir wählen',x:500,y:150}]};
 const FULL0={T:[52,150],gT:[548,150]};
 const SF=o=>Object.assign({},FULL0,o);
 
 const QSR=[
 {id:'r-01',chap:'Torwart',lvl:'U13+',rink:'zone',
- setup:SD({D1:[300,300],gF1:[345,330],P:[330,392]}),intro:I0,
+ setup:SD({D1:[300,100],F1:[120,105],gF1:[340,215],P:[330,392]}),intro:I0,
  q:'Die Scheibe liegt hinter unserem Tor in der Ecke – außerhalb des Trapezes. Darf unser Torwart sie dort spielen?',
  o:['Nein – hinter der Torlinie nur im Trapez, sonst gibt es 2 Minuten','Ja – hinter dem eigenen Tor darf er die Scheibe überall spielen','Ja – aber nur mit dem Schlittschuh, nicht mit dem Schläger','Nur dann, wenn gerade kein Gegner in der Nähe der Scheibe ist'],
  ex:'Hinter der Torlinie darf der Torwart die Scheibe nur im Trapez spielen – entscheidend ist, wo die Scheibe liegt. Sonst gibt es 2 Minuten wegen Spielverzögerung. Vor der Torlinie darf er sie in der eigenen Hälfte überall spielen.',
- solve:[{t:700,m:{},hl:TRAP_OK,txt:'Nur im Trapez erlaubt'},{t:1000,m:{D1:[322,382],P:'D1'},txt:'In der Ecke holt ein Feldspieler die Scheibe'}]},
+ solve:[{t:1200,m:{},hl:TRAP_OK,txt:'Nur im Trapez erlaubt'},{t:1600,m:{D1:[322,382],P:'D1',gF1:[330,330],F1:[150,300]},txt:'D1 kommt zurück und holt die Scheibe'}]},
 
 {id:'r-02',chap:'Torwart',lvl:'U13+',rink:'full',
  setup:SF({D1:[200,90],gF1:[440,160],P:[335,150]}),intro:[{t:1200,m:{T:[250,150]}}],
  q:'Die Scheibe liegt knapp hinter der Mittellinie. Darf unser Torwart dort hinfahren und sie spielen?',
  o:['Nein – hinter der roten Mittellinie darf er nicht ins Spiel eingreifen','Ja – der Torwart darf auf dem ganzen Eis mitspielen','Ja – aber nur, wenn er dabei keinen Schläger benutzt','Nur in der letzten Spielminute, wenn es knapp steht'],
  ex:'Greift der Torwart jenseits der roten Mittellinie ins Spiel ein (Scheibe spielen oder Gegner checken), bekommt er 2 Minuten. Er bleibt in seiner Hälfte.',
- solve:[{t:600,m:{},hl:OVER_RED,txt:'Jenseits der Mittellinie: verboten'},{t:1200,m:{T:[52,150],D1:[325,140],P:'D1'},hl:0,txt:'Torwart zurück – D1 übernimmt'}]},
+ solve:[{t:2000,m:{},hl:OVER_RED,txt:'Jenseits der Mittellinie: verboten'},{t:1400,m:{T:[52,150],D1:[325,140],P:'D1'},txt:'Torwart zurück – D1 übernimmt'},{t:1500,m:{}}]},
 
 {id:'r-03',chap:'Torwart',lvl:'U13+',rink:'zone',
- setup:SD({gF1:[245,240],D2:[170,300],P:[252,248]}),intro:[{t:600,m:{P:[200,333]}}],
- q:'Wann darf der Torwart die Scheibe festhalten?',
- o:['Im oder am Torraum, wenn Gegner Druck machen – nicht ohne Not','Überall auf dem Eis, so oft und so lange er möchte','Nie – er muss die Scheibe immer sofort weiterspielen','Nur hinter dem eigenen Tor, nie im eigenen Torraum'],
- ex:'Nach einem Schuss oder bei Druck im und am Torraum darf der Torwart die Scheibe festhalten. 2 Minuten Spielverzögerung gibt es, wenn er sie ohne Not einfriert, aus dem Torraum herausstürzt und sich auf die Scheibe wirft, sie in die Schoner oder aufs Tornetz legt – oder sie nach vorne Richtung gegnerisches Tor wirft.',
- solve:[{t:700,m:{gF1:[222,300]},hl:CREASE_OK,txt:'Druck am Torraum: festhalten erlaubt'}]},
+ setup:SD({gF1:[245,240],D2:[160,305],P:[252,248]}),intro:[{t:700,m:{T:[205,306]},txt:'Torwart kommt raus und verkürzt den Winkel'}],
+ q:'Der Torwart kommt aus dem Torraum, verkürzt den Winkel und fängt den Schuss. Darf er die Scheibe festhalten?',
+ o:['Ja – nach einer Parade oder bei Druck darf er sie festhalten, auch außerhalb des Torraums','Nein – außerhalb des Torraums darf der Torwart die Scheibe nie festhalten','Ja – und er darf sie danach so lange in der Hand behalten, wie er möchte','Nein – er muss die Scheibe immer sofort mit dem Schläger weiterspielen'],
+ ex:'Kommt der Torwart aus dem Torraum, um den Winkel zu verkürzen, und hält die Scheibe nach der Parade fest, ist das erlaubt. 2 Minuten gibt es, wenn er aus dem Torraum stürzt und sich auf die Scheibe wirft, statt sie zu spielen, wenn er sie ohne Druck länger als 3 Sekunden in der Hand hält oder sie absichtlich festhält, nur um das Spiel zu unterbrechen. Schießt der Gegner die Scheibe von hinter der Mittellinie ins Drittel und der Torwart hält sie fest, darf sein Team vor dem Bully nicht wechseln. Wirft der Torwart die Scheibe nach vorne Richtung gegnerisches Tor, gibt es 2 Minuten – bekommt aber der Gegner die Scheibe, läuft das Spiel weiter; schießt er ein Tor, zählt es und die Strafe entfällt.',
+ solve:[{t:600,m:{P:[205,300]},txt:'Parade außerhalb des Torraums'},{t:600,m:{gF1:[228,282]},txt:'Festhalten: erlaubt'}]},
 
 {id:'r-04',chap:'Strafen',lvl:'U13+',rink:'full',
  setup:SF({F1:[300,150],gF1:[330,165],P:[312,156]}),intro:I0,
