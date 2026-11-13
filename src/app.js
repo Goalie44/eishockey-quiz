@@ -39,9 +39,13 @@ function supaAPI(cfg){
     async resetProgress(){chk(await sb.from('progress').delete().eq('member_id',meCache.id).eq('chapter',CH))},
     async saveAttempt(score,total){chk(await sb.from('attempts').insert({member_id:meCache.id,chapter:CH,score,total}))},
     async bestAll(){return bestMap(chk(await sb.from('attempts').select('chapter,score,total').eq('member_id',meCache.id)))},
-    async teams(){return chk(await sb.from('teams').select('id,name,code').order('name'))},
-    async members(teamId){return chk(await sb.from('members').select('id,display_name,role,user_id,progress(question_id,ok,chapter),attempts(score,total,chapter)').eq('team_id',teamId).order('display_name'))
-      .map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.user_id,progress:m.progress||[],best:bestMap(m.attempts)}))},
+    async teams(){let r=await sb.from('teams').select('id,name,code,chapters').order('name');if(r.error)r=await sb.from('teams').select('id,name,code').order('name');return chk(r)},
+    async setTeamChapters(team,list){const ok=chk(await sb.rpc('set_team_chapters',{p_team:team.id,p_chapters:list}));if(!ok)throw new Error('Keine Berechtigung.')},
+    async setMemberChapters(id,on,off){chk(await sb.from('members').update({chapters_on:on,chapters_off:off}).eq('id',id))},
+    async members(teamId){const base='id,display_name,role,user_id,progress(question_id,ok,chapter),attempts(score,total,chapter)';
+      let r=await sb.from('members').select(base+',chapters_on,chapters_off').eq('team_id',teamId).order('display_name');
+      if(r.error)r=await sb.from('members').select(base).eq('team_id',teamId).order('display_name');
+      return chk(r).map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.user_id,progress:m.progress||[],best:bestMap(m.attempts),on:m.chapters_on||[],off:m.chapters_off||[]}))},
     async addMembers(teamId,names,role){chk(await sb.from('members').insert(names.map(n=>({team_id:teamId,display_name:n,role}))))},
     async removeMember(id){chk(await sb.from('members').delete().eq('id',id))},
     async resetLogin(id){if(!chk(await sb.rpc('reset_login',{p_member:id})))throw new Error('Keine Berechtigung.')},
@@ -68,7 +72,7 @@ function mockAPI(){
     async roster(code){const t=team(code);if(!t)return[];return db.members.filter(m=>m.team_id===t.id).sort((a,b)=>a.display_name.localeCompare(b.display_name)).map(m=>({id:m.id,display_name:m.display_name,claimed:!!m.pw,team_name:t.name}))},
     async signIn(code,id,pw){const m=db.members.find(x=>x.id===id);if(!m||m.pw!==pw)throw new Error('Passwort falsch.');db.session=id;save()},
     async signUp(code,id,pw){if(pw.length<6)throw new Error('Passwort zu kurz (mindestens 6 Zeichen).');const m=db.members.find(x=>x.id===id);if(m.pw)throw new Error('Dieser Name ist schon vergeben.');m.pw=pw;db.session=id;save()},
-    async me(){const m=meM();if(!m)return null;const t=db.teams.find(t=>t.id===m.team_id);return {id:m.id,display_name:m.display_name,role:m.role,team_id:m.team_id,team_name:t.name}},
+    async me(){const m=meM();if(!m)return null;const t=db.teams.find(t=>t.id===m.team_id);return {id:m.id,display_name:m.display_name,role:m.role,team_id:m.team_id,team_name:t.name,team_chapters:t.chapters||null,chapters_on:m.on||[],chapters_off:m.off||[]}},
     async hasSession(){return !!db.session},
     async signOut(){db.session=null;save()},
     async loadProgress(){return db.progress.filter(p=>p.member_id===db.session)},
@@ -77,7 +81,9 @@ function mockAPI(){
     async saveAttempt(score,total){db.attempts.push({member_id:db.session,chapter:CH,score,total});save()},
     async bestAll(){return bestMap(db.attempts.filter(a=>a.member_id===db.session))},
     async teams(){const m=meM();return db.teams.filter(t=>m.role==='admin'||t.id===m.team_id).sort((a,b)=>a.name.localeCompare(b.name))},
-    async members(tid){return db.members.filter(m=>m.team_id===tid).sort((a,b)=>a.display_name.localeCompare(b.display_name)).map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.pw,progress:db.progress.filter(p=>p.member_id===m.id),best:bestMap(db.attempts.filter(a=>a.member_id===m.id))}))},
+    async members(tid){return db.members.filter(m=>m.team_id===tid).sort((a,b)=>a.display_name.localeCompare(b.display_name)).map(m=>({id:m.id,name:m.display_name,role:m.role,claimed:!!m.pw,progress:db.progress.filter(p=>p.member_id===m.id),best:bestMap(db.attempts.filter(a=>a.member_id===m.id)),on:m.on||[],off:m.off||[]}))},
+    async setTeamChapters(team,list){db.teams.find(x=>x.id===team.id).chapters=list;save()},
+    async setMemberChapters(id,on,off){const m=db.members.find(x=>x.id===id);m.on=on;m.off=off;save()},
     async addMembers(tid,names,role){names.forEach(n=>db.members.push({id:uid(),team_id:tid,display_name:n,role}));save()},
     async removeMember(id){db.members=db.members.filter(m=>m.id!==id);db.progress=db.progress.filter(p=>p.member_id!==id);save()},
     async resetLogin(id){const m=db.members.find(x=>x.id===id);delete m.pw;save()},
@@ -94,17 +100,25 @@ if(!LIVE)$('demo').classList.remove('hide');
 
 /* ================= Navigation ================= */
 let ME=null;
+const ALLCH=()=>CHAPTERS.map(c=>c.id);
+function effChapters(teamCh,on,off){const base=teamCh?teamCh:ALLCH();return ALLCH().filter(id=>(base.includes(id)&&!(off||[]).includes(id))||(on||[]).includes(id))}
 function show(id){['boot','login','home','quiz','result','trainer'].forEach(s=>$(s).classList.toggle('hide',s!==id));
   document.body.classList.toggle('wide',id==='quiz');window.scrollTo(0,0)}
-function ask2(text,yes='OK'){return new Promise(r=>{$('minput').classList.add('hide');$('merr').textContent='';$('mtext').textContent=text;$('myes').textContent=yes;$('modal').classList.remove('hide');
+function ask2(text,yes='OK'){return new Promise(r=>{$('minput').classList.add('hide');$('mchecks').classList.add('hide');$('merr').textContent='';$('mtext').textContent=text;$('myes').textContent=yes;$('modal').classList.remove('hide');
   $('myes').onclick=()=>{$('modal').classList.add('hide');r(true)};$('mno').onclick=()=>{$('modal').classList.add('hide');r(false)}})}
 const CODE_RE=/^[A-Za-z0-9ÄÖÜäöü]+(-[A-Za-z0-9ÄÖÜäöü]+)*$/;
 function codeErr(c){if(c.length<4)return 'Der Code braucht mindestens 4 Zeichen.';if(c.length>30)return 'Der Code ist zu lang (max. 30 Zeichen).';if(!CODE_RE.test(c))return 'Nur Buchstaben, Zahlen und Bindestriche, z. B. U15-2006.';return ''}
-function askCode(text,val){return new Promise(r=>{const i=$('minput');$('mtext').textContent=text;$('myes').textContent='Speichern';$('merr').textContent='';i.value=val||'';i.classList.remove('hide');$('modal').classList.remove('hide');setTimeout(()=>i.focus(),50);
+function askCode(text,val){return new Promise(r=>{const i=$('minput');$('mchecks').classList.add('hide');$('mtext').textContent=text;$('myes').textContent='Speichern';$('merr').textContent='';i.value=val||'';i.classList.remove('hide');$('modal').classList.remove('hide');setTimeout(()=>i.focus(),50);
   const done=v=>{$('modal').classList.add('hide');i.classList.add('hide');r(v)};
   i.oninput=()=>{$('merr').textContent=''};
   $('myes').onclick=()=>{const c=i.value.trim();const e=codeErr(c);if(e){$('merr').textContent=e;return}done(c)};
   i.onkeydown=e=>{if(e.key==='Enter')$('myes').click()};
+  $('mno').onclick=()=>done(null)})}
+function askChapters(text,checked){return new Promise(r=>{const box=$('mchecks');$('mtext').textContent=text;$('myes').textContent='Speichern';$('merr').textContent='';
+  box.innerHTML=CHAPTERS.map(c=>`<label class="chk"><input type="checkbox" value="${c.id}"${checked.includes(c.id)?' checked':''}> <span>${esc(c.title)} <small class="muted">${esc(c.lvl)}</small></span></label>`).join('');
+  box.classList.remove('hide');$('modal').classList.remove('hide');
+  const done=v=>{$('modal').classList.add('hide');box.classList.add('hide');r(v)};
+  $('myes').onclick=()=>done([...box.querySelectorAll('input:checked')].map(i=>i.value));
   $('mno').onclick=()=>done(null)})}
 function busy(btn,on,label){if(on){btn.dataset.l=btn.textContent;btn.textContent=label||'…';btn.disabled=true}else{btn.textContent=btn.dataset.l||btn.textContent;btn.disabled=false}}
 
@@ -158,7 +172,7 @@ $('b3').onclick=async()=>{
   finally{busy($('b3'),false)}
 };
 async function enter(){
-  ME=await API.me();
+  ME=await API.me();if(ME)ME.allowed=effChapters(ME.team_chapters,ME.chapters_on,ME.chapters_off);
   if(!ME){await API.signOut();toLogin();$('e1').textContent='Dein Zugang ist nicht mehr aktiv. Frag deinen Trainer.';return}
   await loadAnswers();home();
 }
@@ -175,7 +189,9 @@ async function home(){
   $('htrainer').classList.toggle('hide',ME.role==='player');
   try{BEST=await API.bestAll()}catch(e){BEST={}}
   $('chapters').innerHTML='';
-  CHAPTERS.forEach(c=>{const ans=ALLP[c.id]||{},n=Object.keys(ans).length,right=Object.values(ans).filter(a=>a.ok).length,pct=Math.round(n/c.qs.length*100);
+  const vis=ME.role==='player'?CHAPTERS.filter(c=>ME.allowed.includes(c.id)):CHAPTERS;
+  if(!vis.length)$('chapters').innerHTML='<div class="card muted" style="margin-bottom:14px">Für dich sind noch keine Kapitel freigeschaltet. Frag deinen Trainer.</div>';
+  vis.forEach(c=>{const ans=ALLP[c.id]||{},n=Object.keys(ans).length,right=Object.values(ans).filter(a=>a.ok).length,pct=Math.round(n/c.qs.length*100);
     const d=document.createElement('div');d.className='card';d.style.marginBottom='14px';
     d.innerHTML=`<div class="row" style="justify-content:space-between"><span class="cond" style="font-size:22px;font-weight:700">${esc(c.title)}</span><span class="tag lvl">${esc(c.lvl)}</span></div>
     <div class="muted" style="font-size:15px;margin:2px 0 10px">${esc(c.sub)} · ${c.qs.length} Fragen</div>
@@ -283,6 +299,7 @@ async function renderTeam(){
   if(!TEAM){$('tlist').innerHTML='<p class="muted">Noch keine Mannschaft.</p>';return}
   $('tcode').textContent=TEAM.code;$('tcopymsg').textContent='';$('tshare').classList.add('hide');
   $('tlist').innerHTML='<p class="muted">Lädt …</p>';
+  renderTeamChapters();
   const ms=await API.members(TEAM.id);
   const players=ms.filter(m=>m.role==='player');
   $('tcount').textContent=`${players.length} Spieler · ${players.filter(m=>m.claimed).length} angemeldet`;
@@ -292,11 +309,15 @@ async function renderTeam(){
     const canEdit=ME.role==='admin'||m.role==='player';const self=m.id===ME.id;
     const d=document.createElement('div');d.className='mrow';
     d.innerHTML=`<div class="who"><b>${esc(m.name)}${m.role!=='player'?` <span class="tag" style="font-size:11px">${m.role==='admin'?'Admin':'Trainer'}</span>`:''}</b>
-      <span>${m.claimed?`${pct} % geschafft · ${r}/${n} richtig${bst!=null?` · Bestes: ${bst} %`:''}`:'noch nicht angemeldet'}</span>
+      <span>${m.claimed?`${pct} % geschafft · ${r}/${n} richtig${bst!=null?` · Bestes: ${bst} %`:''}`:'noch nicht angemeldet'}${m.role==='player'&&(m.on.length||m.off.length)?' · <b style="display:inline;font-weight:600">eigene Kapitel</b>':''}</span>
       <div class="minibar"><i style="width:${pct}%"></i></div></div>
-      <div class="acts">${canEdit&&!self&&m.claimed?'<button class="btn small" data-a="reset">Passwort</button>':''}${canEdit&&!self?'<button class="btn small" data-a="del">Entfernen</button>':''}</div>`;
+      <div class="acts">${m.role==='player'?'<button class="btn small" data-a="chap">Kapitel</button>':''}${canEdit&&!self&&m.claimed?'<button class="btn small" data-a="reset">Passwort</button>':''}${canEdit&&!self?'<button class="btn small" data-a="del">Entfernen</button>':''}</div>`;
     d.querySelectorAll('[data-a]').forEach(b=>b.onclick=async()=>{
-      if(b.dataset.a==='reset'){if(!await ask2(`Passwort von ${m.name} zurücksetzen? Beim nächsten Login legt ${m.name} ein neues fest. Der Fortschritt bleibt erhalten.`,'Zurücksetzen'))return;
+      if(b.dataset.a==='chap'){const teamCh=TEAM.chapters||ALLCH();const cur=effChapters(TEAM.chapters,m.on,m.off);
+        const sel=await askChapters(`Kapitel für ${m.name}. Abweichungen von der Mannschafts-Einstellung gelten nur für ${m.name}.`,cur);if(!sel)return;
+        const on=sel.filter(id=>!teamCh.includes(id)),off=teamCh.filter(id=>!sel.includes(id));
+        try{await API.setMemberChapters(m.id,on,off)}catch(e){await ask2('Das hat nicht geklappt. Wurde das Datenbank-Update schon ausgeführt? ('+e.message+')')}}
+      else if(b.dataset.a==='reset'){if(!await ask2(`Passwort von ${m.name} zurücksetzen? Beim nächsten Login legt ${m.name} ein neues fest. Der Fortschritt bleibt erhalten.`,'Zurücksetzen'))return;
         try{await API.resetLogin(m.id)}catch(e){await ask2('Das hat nicht geklappt: '+e.message)}}
       else{if(!await ask2(`${m.name} entfernen? Der Zugang und der Fortschritt werden gelöscht.`,'Entfernen'))return;
         try{await API.removeMember(m.id)}catch(e){await ask2('Das hat nicht geklappt: '+e.message)}}
@@ -304,6 +325,13 @@ async function renderTeam(){
     $('tlist').appendChild(d)});
   renderStats(ms.filter(m=>m.role==='player'));
 }
+function renderTeamChapters(){const cur=TEAM.chapters||ALLCH();
+  $('tchapsel').innerHTML=CHAPTERS.map(c=>`<label class="chk"><input type="checkbox" value="${c.id}"${cur.includes(c.id)?' checked':''}> <span>${esc(c.title)} <small class="muted">${esc(c.lvl)}</small></span></label>`).join('');
+  $('tchapmsg').textContent=''}
+$('tchapsave').onclick=async()=>{const sel=[...$('tchapsel').querySelectorAll('input:checked')].map(i=>i.value);
+  const list=sel.length===CHAPTERS.length?null:sel;
+  try{await API.setTeamChapters(TEAM,list);TEAM.chapters=list;await renderTeam();$('tchapmsg').textContent=list?'Gespeichert.':'Gespeichert – alle Kapitel frei, auch neue.'}
+  catch(e){$('tchapmsg').textContent='Das hat nicht geklappt. Wurde das Datenbank-Update schon ausgeführt?'}};
 function renderStats(ms){
   const rows=tChap().qs.map((q,i)=>{const ps=ms.flatMap(m=>m.progress.filter(p=>p.chapter===TCH&&p.question_id===q.id));
     const ok=ps.filter(p=>p.ok).length;return {i,q,n:ps.length,pct:ps.length?Math.round(ok/ps.length*100):null}});

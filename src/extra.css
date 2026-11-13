@@ -71,3 +71,7 @@ body.wide .wrap{padding-top:8px}
 body.wide .demo{display:none}
 @media (max-height:740px){.rinkbox svg{max-height:35vh;max-height:35dvh}.q{font-size:16px;margin:6px 0}.opt{padding:7px 11px;font-size:15px}.qfoot{margin-top:8px}}
 .qfoot .btn{padding:8px 11px}
+.chk{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:16px;cursor:pointer}
+.chk:last-child{border-bottom:0}
+.chk input{width:20px;height:20px;accent-color:#14181f}
+.acts{flex-wrap:wrap;justify-content:flex-end}

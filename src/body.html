@@ -95,6 +95,12 @@
   </div>
 
   <div class="card" style="margin-bottom:14px">
+    <strong>Freigeschaltete Kapitel</strong>
+    <p class="muted" style="font-size:14px;margin:4px 0 8px">Nur diese Kapitel sehen die Spieler dieser Mannschaft. Alle angehakt = auch neue Kapitel sind automatisch frei. Für einzelne Spieler kannst du unten bei „Kapitel“ abweichen.</p>
+    <div id="tchapsel"></div>
+    <div class="row" style="margin-top:8px"><button class="btn yel" id="tchapsave">Speichern</button><span class="muted" id="tchapmsg" style="font-size:14px"></span></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
     <label class="lbl" for="tchap">Kapitel (für Fortschritt und Auswertung)</label>
     <select id="tchap" class="inp"></select>
     <div class="row" style="justify-content:space-between"><strong>Spieler und Trainer</strong><span class="muted" id="tcount" style="font-size:14px"></span></div>
@@ -130,5 +136,5 @@
 </section>
 
 <div id="sheet" class="sheet hide"><div class="sheetbox" role="dialog" aria-modal="false"><button class="sx" id="sx" aria-label="Erklärung schließen">✕</button><div id="sheetfb"></div><div class="row" style="justify-content:space-between;margin-top:12px"><button class="btn small" id="sreplay">Lösung nochmal</button><button class="btn primary" id="snext">Weiter</button></div></div></div>
-<div id="modal" class="modal hide"><div class="card mbox"><div id="mtext" style="margin-bottom:14px"></div><input id="minput" class="inp hide" autocomplete="off" autocapitalize="characters"><div class="err" id="merr"></div><div class="row" style="justify-content:flex-end"><button class="btn small" id="mno">Abbrechen</button><button class="btn primary" id="myes">OK</button></div></div></div>
+<div id="modal" class="modal hide"><div class="card mbox"><div id="mtext" style="margin-bottom:14px"></div><input id="minput" class="inp hide" autocomplete="off" autocapitalize="characters"><div id="mchecks" class="hide" style="margin-bottom:12px"></div><div class="err" id="merr"></div><div class="row" style="justify-content:flex-end"><button class="btn small" id="mno">Abbrechen</button><button class="btn primary" id="myes">OK</button></div></div></div>
 </div>
