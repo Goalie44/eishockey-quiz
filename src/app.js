@@ -45,7 +45,8 @@ function supaAPI(cfg){
     async addMembers(teamId,names,role){chk(await sb.from('members').insert(names.map(n=>({team_id:teamId,display_name:n,role}))))},
     async removeMember(id){chk(await sb.from('members').delete().eq('id',id))},
     async resetLogin(id){if(!chk(await sb.rpc('reset_login',{p_member:id})))throw new Error('Keine Berechtigung.')},
-    async createTeam(name){const code=(name.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,6)||'TEAM')+'-'+randCode(4);
+    async setCode(team,code){const r=await sb.from('teams').update({code}).eq('id',team.id);if(r.error)throw new Error(r.error.message.includes('duplicate')?'Diesen Code gibt es schon.':r.error.message);return code},
+    async createTeam(name,own){const code=own||(name.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,6)||'TEAM')+'-'+randCode(4);
       return chk(await sb.from('teams').insert({name,code}).select('id,name,code').single())},
     async newCode(team){const code=team.code.split('-')[0]+'-'+randCode(4);chk(await sb.from('teams').update({code}).eq('id',team.id));return code}
   };
@@ -80,7 +81,8 @@ function mockAPI(){
     async addMembers(tid,names,role){names.forEach(n=>db.members.push({id:uid(),team_id:tid,display_name:n,role}));save()},
     async removeMember(id){db.members=db.members.filter(m=>m.id!==id);db.progress=db.progress.filter(p=>p.member_id!==id);save()},
     async resetLogin(id){const m=db.members.find(x=>x.id===id);delete m.pw;save()},
-    async createTeam(name){const t={id:uid(),name,code:(name.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,6)||'TEAM')+'-'+randCode(4)};db.teams.push(t);save();return t},
+    async setCode(team,code){if(db.teams.some(x=>x.id!==team.id&&x.code.toUpperCase()===code.toUpperCase()))throw new Error('Diesen Code gibt es schon.');db.teams.find(x=>x.id===team.id).code=code;save();return code},
+    async createTeam(name,own){if(own&&db.teams.some(x=>x.code.toUpperCase()===own.toUpperCase()))throw new Error('Diesen Code gibt es schon.');const t={id:uid(),name,code:own||(name.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,6)||'TEAM')+'-'+randCode(4)};db.teams.push(t);save();return t},
     async newCode(team){const t=db.teams.find(x=>x.id===team.id);t.code=t.code.split('-')[0]+'-'+randCode(4);save();return t.code}
   };
 }
@@ -94,8 +96,16 @@ if(!LIVE)$('demo').classList.remove('hide');
 let ME=null;
 function show(id){['boot','login','home','quiz','result','trainer'].forEach(s=>$(s).classList.toggle('hide',s!==id));
   document.body.classList.toggle('wide',id==='quiz');window.scrollTo(0,0)}
-function ask2(text,yes='OK'){return new Promise(r=>{$('mtext').textContent=text;$('myes').textContent=yes;$('modal').classList.remove('hide');
+function ask2(text,yes='OK'){return new Promise(r=>{$('minput').classList.add('hide');$('merr').textContent='';$('mtext').textContent=text;$('myes').textContent=yes;$('modal').classList.remove('hide');
   $('myes').onclick=()=>{$('modal').classList.add('hide');r(true)};$('mno').onclick=()=>{$('modal').classList.add('hide');r(false)}})}
+const CODE_RE=/^[A-Za-z0-9ÄÖÜäöü]+(-[A-Za-z0-9ÄÖÜäöü]+)*$/;
+function codeErr(c){if(c.length<4)return 'Der Code braucht mindestens 4 Zeichen.';if(c.length>30)return 'Der Code ist zu lang (max. 30 Zeichen).';if(!CODE_RE.test(c))return 'Nur Buchstaben, Zahlen und Bindestriche, z. B. U15-2006.';return ''}
+function askCode(text,val){return new Promise(r=>{const i=$('minput');$('mtext').textContent=text;$('myes').textContent='Speichern';$('merr').textContent='';i.value=val||'';i.classList.remove('hide');$('modal').classList.remove('hide');setTimeout(()=>i.focus(),50);
+  const done=v=>{$('modal').classList.add('hide');i.classList.add('hide');r(v)};
+  i.oninput=()=>{$('merr').textContent=''};
+  $('myes').onclick=()=>{const c=i.value.trim();const e=codeErr(c);if(e){$('merr').textContent=e;return}done(c)};
+  i.onkeydown=e=>{if(e.key==='Enter')$('myes').click()};
+  $('mno').onclick=()=>done(null)})}
 function busy(btn,on,label){if(on){btn.dataset.l=btn.textContent;btn.textContent=label||'…';btn.disabled=true}else{btn.textContent=btn.dataset.l||btn.textContent;btn.disabled=false}}
 
 /* ================= Login ================= */
@@ -309,8 +319,11 @@ $('tcopy').onclick=async()=>{const t=inviteText();
   let ok=false;try{await navigator.clipboard.writeText(t);ok=true}catch(e){ok=fallbackCopy(t)}
   $('tcopymsg').textContent=ok?'Nachricht kopiert – einfach in WhatsApp einfügen. Oder direkt über den Button senden.':'Kopieren wird hier nicht unterstützt – nutze den WhatsApp-Button oder markiere den Text unten.'};
 $('tsys').onclick=async()=>{try{await navigator.share({text:inviteText()})}catch(e){}};
-$('tnewcode').onclick=async()=>{if(!await ask2(`Neuen Code für ${TEAM.name} erzeugen? Der alte Code funktioniert danach nicht mehr für neue Anmeldungen.`,'Neuer Code'))return;
-  try{TEAM.code=await API.newCode(TEAM);$('tcode').textContent=TEAM.code}catch(e){await ask2('Das hat nicht geklappt: '+e.message)}};
+$('tnewcode').onclick=async()=>{
+  const c=await askCode(`Neuer Code für ${TEAM.name}. Wer gerade angemeldet ist, bleibt angemeldet. Für jede neue Anmeldung – auch nach dem Abmelden oder auf einem neuen Handy – gilt dann der neue Code.`,TEAM.code);
+  if(!c||c===TEAM.code)return;
+  if(TEAMS.some(t=>t.id!==TEAM.id&&t.code.toUpperCase()===c.toUpperCase())){await ask2('Diesen Code hat schon eine andere Mannschaft.');return}
+  try{TEAM.code=await API.setCode(TEAM,c);$('tcode').textContent=TEAM.code;$('tshare').classList.add('hide');$('tcopymsg').textContent='Code geändert.'}catch(e){await ask2('Das hat nicht geklappt: '+e.message)}};
 $('tadd').onclick=async()=>{
   const names=[...new Set($('tnames').value.split('\n').map(s=>s.trim().replace(/\s+/g,' ')).filter(Boolean))];$('tadderr').textContent='';
   if(!names.length){$('tadderr').textContent='Trag mindestens einen Namen ein.';return}
@@ -320,9 +333,11 @@ $('tadd').onclick=async()=>{
   catch(e){$('tadderr').textContent='Das hat nicht geklappt: '+e.message}
   finally{busy($('tadd'),false)}};
 $('tnames').oninput=()=>{$('tadderr').textContent=''};
-$('tcreate').onclick=async()=>{const n=$('tnewteam').value.trim();$('tcreateerr').textContent='';
+$('tnewteam').oninput=$('tnewteamcode').oninput=()=>{$('tcreateerr').textContent=''};
+$('tcreate').onclick=async()=>{const n=$('tnewteam').value.trim(),c=$('tnewteamcode').value.trim();$('tcreateerr').textContent='';
   if(!n){$('tcreateerr').textContent='Gib einen Namen ein.';return}
-  try{const t=await API.createTeam(n);$('tnewteam').value='';TEAMS=await API.teams();TEAM=TEAMS.find(x=>x.id===t.id)||t;renderTeams();await renderTeam()}
+  if(c){const e=codeErr(c);if(e){$('tcreateerr').textContent=e;return}if(TEAMS.some(t=>t.code.toUpperCase()===c.toUpperCase())){$('tcreateerr').textContent='Diesen Code hat schon eine andere Mannschaft.';return}}
+  try{const t=await API.createTeam(n,c||null);$('tnewteam').value='';$('tnewteamcode').value='';TEAMS=await API.teams();TEAM=TEAMS.find(x=>x.id===t.id)||t;renderTeams();await renderTeam()}
   catch(e){$('tcreateerr').textContent='Das hat nicht geklappt: '+e.message}};
 
 /* ================= Start ================= */
