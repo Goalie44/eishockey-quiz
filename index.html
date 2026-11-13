@@ -138,6 +138,11 @@ body.wide .demo{display:none}
 .chk:last-child{border-bottom:0}
 .chk input{width:20px;height:20px;accent-color:#14181f}
 .acts{flex-wrap:wrap;justify-content:flex-end}
+.fold summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.fold summary::-webkit-details-marker{display:none}
+.foldhint{font-size:14px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.foldhint::after{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin-top:-4px;transition:transform .2s}
+.fold[open] .foldhint{font-size:0}.fold[open] .foldhint::after{transform:rotate(-135deg);margin-top:4px}
 
 body{padding-bottom:env(safe-area-inset-bottom)}
 </style>
@@ -263,11 +268,11 @@ body{padding-bottom:env(safe-area-inset-bottom)}
     <div class="err" id="tadderr"></div>
   </div>
 
-  <div class="card" style="margin-bottom:14px">
-    <strong>Fragen-Auswertung</strong>
-    <p class="muted" style="font-size:14px;margin:4px 0 8px">Wie viele der Antworten waren richtig – so siehst du, was du im Training nochmal aufgreifen solltest.</p>
+  <details class="card fold" style="margin-bottom:14px">
+    <summary><strong>Fragen-Auswertung</strong><span class="foldhint">anzeigen</span></summary>
+    <p class="muted" style="font-size:14px;margin:8px 0 8px">Wie viele der Antworten waren richtig – so siehst du, was du im Training nochmal aufgreifen solltest.</p>
     <div id="tstats"></div>
-  </div>
+  </details>
 
   <div class="card adminonly" style="margin-bottom:14px">
     <strong>Neue Mannschaft</strong>
