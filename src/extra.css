@@ -120,3 +120,15 @@ body.noscroll{overflow:hidden}
 .lbox{border-radius:12px;padding:10px 12px;margin:8px 0;font-size:15px}
 .lbox ul{margin:6px 0 0;padding-left:18px}.lbox li{margin-bottom:5px}
 .lbox.ok{background:#e3f4ec}.lbox.bad{background:#fdecec}
+
+.lsteps{margin:6px 0 10px}.lsteps strong{display:block;margin-bottom:6px}
+.lstep{display:flex;gap:10px;align-items:flex-start;background:#eef4fc;border-radius:12px;padding:9px 12px;margin-bottom:6px;font-size:15px}
+.lstep span{flex:none;width:24px;height:24px;border-radius:50%;background:#f08c00;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.lcues{background:var(--ink);color:#fff;border-radius:14px;padding:12px;margin:10px 0}
+.lcues span{display:inline-block;background:#2a3140;border-radius:20px;padding:6px 12px;margin:4px 6px 0 0;font-size:14px;font-weight:600}
+.lcueh{font-size:11px;font-weight:700;letter-spacing:.08em;color:#f08c00;margin-bottom:4px}
+.lmerke{border-left:4px solid #f08c00;background:#fff4e6;border-radius:0 12px 12px 0;padding:9px 12px;margin:6px 0 10px;font-size:15px}
+.lmist{margin:10px 0}.lmist strong{display:block;margin-bottom:6px}
+.lmi{background:#fdecec;border-radius:12px;padding:9px 12px;margin-bottom:6px;font-size:14px}
+.lmi b{display:block;font-size:15px;margin-bottom:2px}
+.lw{font-weight:600;color:#a52020}.lf{font-weight:600;color:#1a6b4a}

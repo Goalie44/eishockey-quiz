@@ -29,7 +29,8 @@ function build(q){
   drawSticks();
   hl(null);banner('');
 }
-function hl(h){const g=$('hl');if(!g)return;g.innerHTML=!h?'':h.areas?h.areas.map(a=>`<path d="${a.d}" fill="${a.c}" fill-opacity="0.17" stroke="${a.c}" stroke-width="2.5" stroke-dasharray="${a.dash||'7 5'}"/>`+(a.t?`<text x="${a.x}" y="${a.y}" text-anchor="middle" font-size="13" font-weight="700" fill="${a.c}" font-family="Barlow">${a.t}</text>`:'')).join(''):h.d?`<path class="${h.line?'hlline':'hlarea'}" d="${h.d}"/>`:`<circle class="hlring" cx="${h[0]}" cy="${h[1]}" r="${h[2]}"/>`}
+function pillT(a){const fs=a.fs||12,w=a.t.length*fs*0.56+16,hh=fs+9;return `<rect x="${a.x-w/2}" y="${a.y-hh/2}" width="${w}" height="${hh}" rx="${hh/2}" fill="${a.c}"/><text x="${a.x}" y="${a.y+fs*0.36}" text-anchor="middle" font-size="${fs}" font-weight="700" fill="#fff" font-family="Barlow">${a.t}</text>`}
+function hl(h){const g=$('hl');if(!g)return;g.innerHTML=!h?'':h.areas?h.areas.map(a=>`<path d="${a.d}" fill="${a.c}" fill-opacity="${a.op||0.17}" stroke="${a.c}" stroke-width="${a.sw||2.5}" stroke-dasharray="${a.dash||'7 5'}"/>`).join('')+h.areas.map(a=>!a.t?'':a.pill?pillT(a):`<text x="${a.x}" y="${a.y}" text-anchor="middle" font-size="13" font-weight="700" fill="${a.c}" font-family="Barlow">${a.t}</text>`).join(''):h.d?`<path class="${h.line?'hlline':'hlarea'}" d="${h.d}"/>`:`<circle class="hlring" cx="${h[0]}" cy="${h[1]}" r="${h[2]}"/>`}
 function banner(t){const b=$('banner');if(t){b.textContent=t;b.classList.add('on')}else b.classList.remove('on')}
 function blade(c,dir){const d=Math.hypot(dir[0],dir[1])||1;return [c[0]+dir[0]/d*31,c[1]+dir[1]/d*31]}
 function snapPuck(tg){if(!stickOn||!tg.P)return;let best=null,bd=18;

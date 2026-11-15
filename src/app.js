@@ -242,17 +242,26 @@ function lessonBase(upto){const ps=LES.pages;let si=0;for(let k=0;k<=Math.min(up
   const q={rink:(ps[si].rink||LES.rink),setup:ps[si].setup||LES.setup,label:ps[si].label||LES.label};build(q);
   for(let k=si;k<upto&&k<ps.length;k++)jump(ps[k].steps||[]);
   let h=null;for(let k=si;k<upto&&k<ps.length;k++)(ps[k].steps||[]).forEach(s=>{if(s.hl!==undefined)h=s.hl});return h}
+function lessonZoom(pg){const r=RINK[pg.rink||LES.rink];if(!r||pg.zoom===false)return;const vb=r.vb.split(' ').map(Number);
+  if(vb[2]<200)return;const pts=[[200,368]];for(const k in pos)pts.push(pos[k]);
+  (pg.steps||[]).forEach(st=>{for(const k in st.m){const v=st.m[k];if(Array.isArray(v))pts.push(v)}});
+  let x0=Math.min(...pts.map(p=>p[0])),x1=Math.max(...pts.map(p=>p[0])),y0=Math.min(...pts.map(p=>p[1])),y1=Math.max(...pts.map(p=>p[1]));
+  const ar=vb[3]/vb[2];let w=Math.max(x1-x0+70,(y1-y0+90)/ar,240);w=Math.min(w,vb[2]);let h=Math.min(w*ar,vb[3]);
+  let cx=(x0+x1)/2,cy=(y0+y1)/2+10;let x=Math.max(vb[0],Math.min(cx-w/2,vb[0]+vb[2]-w)),y=Math.max(vb[1],Math.min(cy-h/2,vb[1]+vb[3]-h));
+  $('rink').setAttribute('viewBox',`${x.toFixed(0)} ${y.toFixed(0)} ${w.toFixed(0)} ${h.toFixed(0)}`)}
 async function loadPage(){const pages=lessonPages(LES),pg=pages[LP],tk=++token,n=pages.length;
   $('lprog').textContent=`Seite ${LP+1}/${n}`;$('lbar').style.width=Math.round((LP+1)/n*100)+'%';
   $('lprev').classList.toggle('hide',LP===0);
+  RINKBOX().classList.toggle('hide',!!pg.end);
   if(pg.end){lessonBase(LES.pages.length);hl(null);banner('');$('lreplay').classList.add('hide');
     $('lh').textContent='Das Wichtigste';
-    $('ltxt').innerHTML=(LES.how?`<div class="lbox ok"><strong>So geht's</strong><ul>${LES.how.map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`:'')+
-      (LES.mistakes?`<div class="lbox bad"><strong>Typische Fehler</strong><ul>${LES.mistakes.map(m=>`<li><b>${esc(m[0])}</b><br>${esc(m[1])}</li>`).join('')}</ul></div>`:'');
+    $('ltxt').innerHTML=(LES.how?`<div class="lsteps"><strong>So geht's</strong>${LES.how.map((t,i)=>`<div class="lstep"><span>${i+1}</span><div>${esc(t)}</div></div>`).join('')}</div>`:'')+
+      (LES.cues?`<div class="lcues"><div class="lcueh">MERKSÄTZE</div>${LES.cues.map(t=>`<span>„${esc(t)}“</span>`).join('')}</div>`:'')+
+      (LES.mistakes?`<div class="lmist"><strong>Typische Fehler</strong>${LES.mistakes.map(m=>`<div class="lmi"><b>${esc(m[0])}</b>${m[2]?`<div><span class="lw">Warum blöd:</span> ${esc(m[1])}</div><div><span class="lf">Besser:</span> ${esc(m[2])}</div>`:`<div>${esc(m[1])}</div>`}</div>`).join('')}</div>`:'');
     $('lnext').textContent='Lektion fertig ✓';return}
   $('lreplay').classList.remove('hide');$('lnext').textContent='Weiter';
-  $('lh').textContent=pg.h;$('ltxt').innerHTML=pg.txt.split('\n').map(t=>`<p>${esc(t)}</p>`).join('');
-  hl(lessonBase(LP));banner('');if(pg.hl!==undefined)hl(pg.hl);
+  $('lh').textContent=pg.h;$('ltxt').innerHTML=pg.txt.split('\n').map(t=>`<p>${esc(t)}</p>`).join('')+(pg.merke?`<div class="lmerke"><div class="lcueh">MERKE</div>${esc(pg.merke)}</div>`:'');
+  hl(lessonBase(LP));banner('');if(pg.hl!==undefined)hl(pg.hl);lessonZoom(pg);
   await wait(350);await play(pg.steps||[],tk)}
 $('lnext').onclick=async()=>{const n=lessonPages(LES).length;
   if(LP<n-1){LP++;loadPage();return}
@@ -272,6 +281,7 @@ function startRun(list,isFull){full=isFull;order=list;
   if(!isFull)list.forEach(i=>delete answers[i]);
   show('quiz');loadQ()}
 async function loadQ(){
+  RINKBOX().classList.remove('hide');
   if(RINKBOX().parentNode.id!=='qleftq')document.querySelector('#quiz .qleft').appendChild(RINKBOX());
   cur=QS[order[idx]];const tk=++token;const a=answers[order[idx]];
   $('prog').textContent=`Frage ${idx+1}/${order.length}`;
