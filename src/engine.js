@@ -1,7 +1,7 @@
 const NS='http://www.w3.org/2000/svg';
 let pos={},els={},token=0,order=[],idx=0,answers={},cur=null,shuffled=[];
 
-let ang={},curA={},stickOn=false;
+let ang={},curA={},stickOn=false,curRink='';
 const STK='<g class="stk"><line x1="11" y1="0" x2="29" y2="0" stroke="#14181f" stroke-width="3" stroke-linecap="round"/><line x1="29" y1="0" x2="32" y2="7" stroke="#14181f" stroke-width="4.5" stroke-linecap="round"/></g>';
 function hasStick(k){return stickOn&&k!=='P'&&k!=='T'&&k[0]!=='g'}
 function autoA(k){const p=pos.P;if(!p)return 90;return Math.atan2(p[1]-pos[k][1],p[0]-pos[k][0])*180/Math.PI}
@@ -14,12 +14,12 @@ function mkEnt(k){
   g.innerHTML=opp
    ?`<circle r="12" fill="#e0312b" stroke="#fff" stroke-width="1.5"/><text y="4" text-anchor="middle" font-size="10.5" font-weight="600" fill="#fff" font-family="Barlow">${lab}</text>`
    :(hasStick(k)?STK:'')+`<circle r="14" fill="#14181f" stroke="#FFD100" stroke-width="2"/><text y="4" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="Barlow">${lab}</text>`;
-  if(k==='T'||k==='gT')g.innerHTML='<g transform="scale(0.78)">'+g.innerHTML+'</g>';
+  if(k==='T'||k==='gT')g.innerHTML='<g transform="scale('+(curRink==='crease'?0.42:0.78)+')">'+g.innerHTML+'</g>';
   return g;
 }
 function setPos(k,p){pos[k]=p;els[k].setAttribute('transform',`translate(${p[0]} ${p[1]})`)}
 function build(q){
-  const r=RINK[q.rink],svg=$('rink');
+  const r=RINK[q.rink],svg=$('rink');curRink=q.rink;
   svg.setAttribute('viewBox',r.vb);
   svg.innerHTML=(q.label?r.svg.replace(/>(unser|gegnerisches) Tor</,'>'+q.label+'<'):r.svg)+'<g id="hl"></g><g id="ents"></g>';
   pos={};els={};ang={};curA={};stickOn=(q.rink==='zone'||q.rink==='big')&&!q.noSticks;
@@ -30,7 +30,7 @@ function build(q){
   hl(null);banner('');
 }
 function pillT(a){const fs=a.fs||12,w=a.t.length*fs*0.56+16,hh=fs+9;return `<rect x="${a.x-w/2}" y="${a.y-hh/2}" width="${w}" height="${hh}" rx="${hh/2}" fill="${a.c}"/><text x="${a.x}" y="${a.y+fs*0.36}" text-anchor="middle" font-size="${fs}" font-weight="700" fill="#fff" font-family="Barlow">${a.t}</text>`}
-function hl(h){const g=$('hl');if(!g)return;g.innerHTML=!h?'':h.areas?h.areas.map(a=>`<path d="${a.d}" fill="${a.c}" fill-opacity="${a.op||0.17}" stroke="${a.c}" stroke-width="${a.sw||2.5}" stroke-dasharray="${a.dash||'7 5'}"/>`).join('')+h.areas.map(a=>!a.t?'':a.pill?pillT(a):`<text x="${a.x}" y="${a.y}" text-anchor="middle" font-size="13" font-weight="700" fill="${a.c}" font-family="Barlow">${a.t}</text>`).join(''):h.d?`<path class="${h.line?'hlline':'hlarea'}" d="${h.d}"/>`:`<circle class="hlring" cx="${h[0]}" cy="${h[1]}" r="${h[2]}"/>`}
+function hl(h){const g=$('hl');if(!g)return;g.innerHTML=!h?'':h.areas?h.areas.map(a=>`<path d="${a.d}" fill="${a.c}" fill-opacity="${a.op!=null?a.op:0.17}" stroke="${a.c}" stroke-width="${a.sw||2.5}" stroke-dasharray="${a.dash||'7 5'}"/>`).join('')+h.areas.map(a=>!a.t?'':a.pill?pillT(a):`<text x="${a.x}" y="${a.y}" text-anchor="middle" font-size="13" font-weight="700" fill="${a.c}" font-family="Barlow">${a.t}</text>`).join(''):h.d?`<path class="${h.line?'hlline':'hlarea'}" d="${h.d}"/>`:`<circle class="hlring" cx="${h[0]}" cy="${h[1]}" r="${h[2]}"/>`}
 function banner(t){const b=$('banner');if(t){b.textContent=t;b.classList.add('on')}else b.classList.remove('on')}
 function blade(c,dir){const d=Math.hypot(dir[0],dir[1])||1;return [c[0]+dir[0]/d*31,c[1]+dir[1]/d*31]}
 function snapPuck(tg){if(!stickOn||!tg.P)return;let best=null,bd=18;

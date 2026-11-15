@@ -1,5 +1,5 @@
 /* ---------- Torwart-Wissen: Lektionen (Inhalt nach DEB-Rahmentrainingskonzeption) ---------- */
-RINK.crease={vb:'112 268 176 150',svg:RINK.zone.svg};
+RINK.crease={vb:'128 286 144 100',svg:RINK.zone.svg};
 const GOALC=[200,350];
 const LINE=(a,b,c)=>({areas:[{d:`M${a[0]} ${a[1]}L${b[0]} ${b[1]}`,c:c||'#2f6fd6',op:0}]});
 const ROUTE=(pts,c,t,tx,ty)=>({areas:[{d:'M'+pts.map(p=>p.join(' ')).join('L'),c:c||'#f08c00',op:0,sw:2.2,dash:'4 3',t,x:tx,y:ty,pill:true,fs:8}]});
@@ -105,7 +105,7 @@ const TWLES=[
  mistakes:[['Mit Shuffles einem weiten Pass hinterher','Zu langsam – der Schuss kommt vorher.','Bei weiten Wegen den T-Push nehmen.'],['Übers Ziel hinaus','Dann ist die andere Seite offen.','Nach dem T-Push auf der Kufe stoppen, mittig zum Puck.'],['Puck aus den Augen verloren','Man weiß nicht, wohin man muss.','Zuerst dreht der Kopf zum Puck.']]},
 
 /* 5 */
-{id:'tl-05',short:'Laufmuster',title:'Die DEB-Laufmuster',sub:'Feste Wege im Torraum – #1 bis #7',q:'Lektion: DEB-Laufmuster',chap:'Lektion',o:[],rink:'crease',
+{id:'tl-05',short:'Laufmuster',title:'Die DEB-Laufmuster',sub:'Feste Wege im Torraum – #1 bis #7',q:'Lektion: DEB-Laufmuster',chap:'Lektion',o:[],rink:'crease',label:' ',
  pages:[
  {h:'Wozu Laufmuster?',setup:{T:LP_},
   txt:'Die Laufmuster des DEB sind feste Wege im Torraum. Sie simulieren Spielsituationen: vom Pfosten raus zum Puck, quer rüber, zurück an den anderen Pfosten.\nWer sie oft übt, macht die Bewegungen im Spiel automatisch richtig. Vorher braucht es ein gutes Fundament aus allgemeinem Schlittschuhlaufen.',
