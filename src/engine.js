@@ -21,7 +21,7 @@ function setPos(k,p){pos[k]=p;els[k].setAttribute('transform',`translate(${p[0]}
 function build(q){
   const r=RINK[q.rink],svg=$('rink');
   svg.setAttribute('viewBox',r.vb);
-  svg.innerHTML=(q.label?r.svg.replace('>unser Tor<','>'+q.label+'<'):r.svg)+'<g id="hl"></g><g id="ents"></g>';
+  svg.innerHTML=(q.label?r.svg.replace(/>(unser|gegnerisches) Tor</,'>'+q.label+'<'):r.svg)+'<g id="hl"></g><g id="ents"></g>';
   pos={};els={};ang={};curA={};stickOn=(q.rink==='zone'||q.rink==='big')&&!q.noSticks;
   const keys=Object.keys(q.setup).sort((a,b)=>(a==='P')-(b==='P')||(b[0]==='g')-(a[0]==='g'));
   keys.forEach(k=>{els[k]=mkEnt(k);$('ents').appendChild(els[k]);setPos(k,q.setup[k]);if(q.setup[k][2]!=null)ang[k]=q.setup[k][2]});
