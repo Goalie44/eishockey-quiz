@@ -2,7 +2,7 @@ const CHAPTERS=[
  {id:'k1',title:'Kapitel 1',sub:'Defensive Zone · Aufbau · Bully · Regelkunde',lvl:'U13+',qs:QS1},
  {id:'beg',title:'Eishockey-Begriffe',sub:'Die Begriffe aus dem Playbook – mit Animation',lvl:'U13–U17',qs:QSB},
  {id:'reg',title:'Regelkunde',sub:'Torwart, Strafen, Bully, Icing, Abseits, Ausrüstung',lvl:'U13+',qs:QSR},
- {id:'tw',title:'Torwart',sub:'Positionsspiel · Bewegung · Pfosten · Abwehr · Spiel lesen',lvl:'Torhüter',qs:QST}
+ {id:'twl',type:'lessons',title:'Torwart-Wissen',sub:'Lektionen zum Torwartspiel',intro:'Kurze Lektionen mit Animation – zum Anschauen und Nachlesen. Inhalt nach der DEB-Rahmentrainingskonzeption.',lvl:'Torhüter',qs:TWLES}
 ];
 let CH='k1',QS=QS1,CHAP=CHAPTERS[0];
 function setChapter(id){CHAP=CHAPTERS.find(c=>c.id===id)||CHAPTERS[0];CH=CHAP.id;QS=CHAP.qs}
@@ -106,8 +106,8 @@ if(!LIVE)$('demo').classList.remove('hide');
 let ME=null;
 const ALLCH=()=>CHAPTERS.map(c=>c.id);
 function effChapters(teamCh,on,off){const base=teamCh?teamCh:ALLCH();return ALLCH().filter(id=>(base.includes(id)&&!(off||[]).includes(id))||(on||[]).includes(id))}
-function show(id){['boot','login','home','quiz','result','trainer'].forEach(s=>$(s).classList.toggle('hide',s!==id));
-  document.body.classList.toggle('wide',id==='quiz');window.scrollTo(0,0)}
+function show(id){['boot','login','home','quiz','result','trainer','lessons','lesson'].forEach(s=>$(s).classList.toggle('hide',s!==id));
+  document.body.classList.toggle('wide',id==='quiz'||id==='lesson');window.scrollTo(0,0)}
 function ask2(text,yes='OK'){return new Promise(r=>{$('minput').classList.add('hide');$('mchecks').classList.add('hide');$('merr').textContent='';$('mtext').textContent=text;$('myes').textContent=yes;$('modal').classList.remove('hide');
   $('myes').onclick=()=>{$('modal').classList.add('hide');r(true)};$('mno').onclick=()=>{$('modal').classList.add('hide');r(false)}})}
 const CODE_RE=/^[A-Za-z0-9ÄÖÜäöü]+(-[A-Za-z0-9ÄÖÜäöü]+)*$/;
@@ -203,6 +203,14 @@ async function home(){
   if(!vis.length)$('chapters').innerHTML='<div class="card muted" style="margin-bottom:14px">Für dich sind noch keine Kapitel freigeschaltet. Frag deinen Trainer.</div>';
   vis.forEach(c=>{const ans=ALLP[c.id]||{},n=Object.keys(ans).length,right=Object.values(ans).filter(a=>a.ok).length,pct=Math.round(n/c.qs.length*100);
     const d=document.createElement('div');d.className='card';d.style.marginBottom='14px';
+    if(c.type==='lessons'){
+      d.innerHTML=`<div class="row" style="justify-content:space-between"><span class="cond" style="font-size:22px;font-weight:700">${esc(c.title)}</span><span class="tag lvl">${esc(c.lvl)}</span></div>
+      <div class="muted" style="font-size:15px;margin:2px 0 10px">${esc(c.sub)} · ${c.qs.length} Lektionen</div>
+      <div style="display:flex;justify-content:space-between;font-weight:600;font-size:15px"><span>${n?`${n} von ${c.qs.length} Lektionen angeschaut`:'Noch nicht begonnen'}</span><span>${pct} %</span></div>
+      <div class="bar" style="margin:6px 0 12px"><i style="width:${pct}%"></i></div>
+      <div class="row"><button class="btn yel" data-a="go">${n?'Weiterlernen':'Starten'}</button></div>`;
+      d.querySelector('[data-a=go]').onclick=()=>openLessons(c.id);
+      $('chapters').appendChild(d);return}
     d.innerHTML=`<div class="row" style="justify-content:space-between"><span class="cond" style="font-size:22px;font-weight:700">${esc(c.title)}</span><span class="tag lvl">${esc(c.lvl)}</span></div>
     <div class="muted" style="font-size:15px;margin:2px 0 10px">${esc(c.sub)} · ${c.qs.length} Fragen</div>
     <div style="display:flex;justify-content:space-between;font-weight:600;font-size:15px"><span>${n?`${n} von ${c.qs.length} beantwortet · ${right} richtig`:'Noch nicht begonnen'}</span><span>${pct} %</span></div>
@@ -218,6 +226,44 @@ async function home(){
     $('chapters').appendChild(d)});
 }
 
+/* ================= Lektionen ================= */
+let LCH=null,LES=null,LP=0;
+const RINKBOX=()=>$('rink').parentNode;
+function openLessons(id){setChapter(id);LCH=CHAP;answers=ALLP[id]||{};show('lessons');
+  $('ltitle').textContent=LCH.title;$('lsub').textContent=LCH.intro||LCH.sub;$('llvl').textContent=LCH.lvl;
+  $('llist').innerHTML='';
+  LCH.qs.forEach((l,i)=>{const seen=!!(ALLP[id]||{})[i];const d=document.createElement('button');d.className='lcard'+(seen?' seen':'');
+    d.innerHTML=`<span class="lnum">${seen?'✓':i+1}</span><span class="lbody"><b>${esc(l.title)}</b><span class="muted">${esc(l.sub)}</span></span><span class="lgo">›</span>`;
+    d.onclick=()=>startLesson(i);$('llist').appendChild(d)})}
+$('lback').onclick=()=>home();
+function lessonPages(l){return l.pages.concat([{end:true}])}
+function startLesson(i){LES=LCH.qs[i];LES._i=i;LP=0;$('lleft').appendChild(RINKBOX());show('lesson');$('lname').textContent=LES.short||LES.title;loadPage()}
+function lessonBase(upto){const ps=LES.pages;let si=0;for(let k=0;k<=Math.min(upto,ps.length-1);k++)if(ps[k].setup)si=k;
+  const q={rink:(ps[si].rink||LES.rink),setup:ps[si].setup||LES.setup,label:ps[si].label||LES.label};build(q);
+  for(let k=si;k<upto&&k<ps.length;k++)jump(ps[k].steps||[]);
+  let h=null;for(let k=si;k<upto&&k<ps.length;k++)(ps[k].steps||[]).forEach(s=>{if(s.hl!==undefined)h=s.hl});return h}
+async function loadPage(){const pages=lessonPages(LES),pg=pages[LP],tk=++token,n=pages.length;
+  $('lprog').textContent=`Seite ${LP+1}/${n}`;$('lbar').style.width=Math.round((LP+1)/n*100)+'%';
+  $('lprev').classList.toggle('hide',LP===0);
+  if(pg.end){lessonBase(LES.pages.length);hl(null);banner('');$('lreplay').classList.add('hide');
+    $('lh').textContent='Das Wichtigste';
+    $('ltxt').innerHTML=(LES.how?`<div class="lbox ok"><strong>So geht's</strong><ul>${LES.how.map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`:'')+
+      (LES.mistakes?`<div class="lbox bad"><strong>Typische Fehler</strong><ul>${LES.mistakes.map(m=>`<li><b>${esc(m[0])}</b><br>${esc(m[1])}</li>`).join('')}</ul></div>`:'');
+    $('lnext').textContent='Lektion fertig ✓';return}
+  $('lreplay').classList.remove('hide');$('lnext').textContent='Weiter';
+  $('lh').textContent=pg.h;$('ltxt').innerHTML=pg.txt.split('\n').map(t=>`<p>${esc(t)}</p>`).join('');
+  hl(lessonBase(LP));banner('');if(pg.hl!==undefined)hl(pg.hl);
+  await wait(350);await play(pg.steps||[],tk)}
+$('lnext').onclick=async()=>{const n=lessonPages(LES).length;
+  if(LP<n-1){LP++;loadPage();return}
+  token++;const i=LES._i;if(!(ALLP[CH]||{})[i]){ALLP[CH][i]={ok:true,oi:null};API.saveAnswer(LES.id,true,null).catch(()=>{})}
+  const nx=i+1<LCH.qs.length?i+1:null;
+  if(nx!=null&&await ask2(`„${LES.title}“ geschafft! Gleich mit der nächsten Lektion „${LCH.qs[nx].title}“ weitermachen?`,'Weiter')){startLesson(nx);return}
+  openLessons(CH)};
+$('lprev').onclick=()=>{if(LP>0){LP--;loadPage()}};
+$('lreplay').onclick=()=>loadPage();
+$('lmenu').onclick=()=>{token++;openLessons(CH)};
+
 /* ================= Quiz ================= */
 function doneCount(){return order.filter(i=>answers[i]).length}
 function updDone(){const n=doneCount(),pct=Math.round(n/order.length*100);$('barfill').style.width=pct+'%';$('done').textContent=`${pct} % geschafft`.replace(' geschafft','')}
@@ -226,6 +272,7 @@ function startRun(list,isFull){full=isFull;order=list;
   if(!isFull)list.forEach(i=>delete answers[i]);
   show('quiz');loadQ()}
 async function loadQ(){
+  if(RINKBOX().parentNode.id!=='qleftq')document.querySelector('#quiz .qleft').appendChild(RINKBOX());
   cur=QS[order[idx]];const tk=++token;const a=answers[order[idx]];
   $('prog').textContent=`Frage ${idx+1}/${order.length}`;
   $('chap').textContent=cur.chap;$('lvl').textContent=cur.lvl;updDone();

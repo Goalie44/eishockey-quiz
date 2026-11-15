@@ -108,3 +108,15 @@ body.wide .demo{display:none}
 body.noscroll{overflow:hidden}
 @media (min-width:700px){.pvsum{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:560px){.mrow{flex-wrap:wrap;row-gap:8px}.mrow .who{flex:1 1 100%}.mrow .acts{flex:1 1 100%;justify-content:flex-start}}
+
+.lcard{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px;font:inherit;color:inherit;cursor:pointer}
+.lcard .lnum{flex:none;width:34px;height:34px;border-radius:50%;background:var(--yel);display:flex;align-items:center;justify-content:center;font-weight:700}
+.lcard.seen .lnum{background:#e3f4ec;color:#1D7A55}
+.lcard .lbody{flex:1;display:flex;flex-direction:column;gap:2px}
+.lcard .lbody .muted{font-size:14px}
+.lcard .lgo{font-size:24px;color:var(--muted)}
+.lh{font-size:20px;margin:10px 0 4px}
+.ltxt p{margin:0 0 8px;font-size:16px;line-height:1.45}
+.lbox{border-radius:12px;padding:10px 12px;margin:8px 0;font-size:15px}
+.lbox ul{margin:6px 0 0;padding-left:18px}.lbox li{margin-bottom:5px}
+.lbox.ok{background:#e3f4ec}.lbox.bad{background:#fdecec}
